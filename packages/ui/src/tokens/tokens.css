@@ -1,0 +1,151 @@
+/**
+ * Atlas design tokens as CSS custom properties.
+ *
+ * Source of truth for runtime theming. The TypeScript token modules
+ * (`primitives.ts`, `semantic.ts`) describe the same system for type-safe
+ * authoring; this file applies it to the DOM.
+ *
+ * Default theme is dark (the Atlas canvas). A light theme and a high-contrast
+ * variant are provided per blueprint/06 - Accessibility.md.
+ */
+
+:root {
+  /* ── Primitive ramps (exposed for charts / advanced composition) ── */
+  --atlas-neutral-0: #ffffff;
+  --atlas-neutral-50: #f6f7f9;
+  --atlas-neutral-100: #eceef2;
+  --atlas-neutral-200: #d6dae2;
+  --atlas-neutral-300: #b3bac7;
+  --atlas-neutral-400: #8b94a6;
+  --atlas-neutral-500: #646e82;
+  --atlas-neutral-600: #39414f;
+  --atlas-neutral-700: #2b3242;
+  --atlas-neutral-800: #1c212e;
+  --atlas-neutral-900: #12161f;
+  --atlas-neutral-950: #0b0e15;
+  --atlas-neutral-1000: #06080c;
+
+  --atlas-accent-300: #9faaff;
+  --atlas-accent-400: #7a82fb;
+  --atlas-accent-500: #5b5ef0;
+  --atlas-accent-600: #4a44dd;
+  --atlas-accent-700: #3d36bb;
+
+  --atlas-teal-400: #33b9a6;
+  --atlas-teal-500: #1b9a8a;
+
+  /* ── Semantic roles — DARK (default) ── */
+  --atlas-surface-canvas: #06080c;
+  --atlas-surface-base: #0b0e15;
+  --atlas-surface-raised: #12161f;
+  --atlas-surface-overlay: #1c212e;
+  --atlas-surface-inverted: #f6f7f9;
+
+  --atlas-border-subtle: rgba(255, 255, 255, 0.06);
+  --atlas-border-default: rgba(255, 255, 255, 0.1);
+  --atlas-border-strong: rgba(255, 255, 255, 0.18);
+  --atlas-border-focus: #7a82fb;
+
+  --atlas-text-primary: #f6f7f9;
+  --atlas-text-secondary: #b3bac7;
+  --atlas-text-tertiary: #8b94a6;
+  --atlas-text-inverted: #0b0e15;
+  --atlas-text-on-accent: #ffffff;
+  --atlas-text-disabled: #646e82;
+
+  --atlas-accent-subtle: rgba(91, 94, 240, 0.14);
+  --atlas-accent-default: #5b5ef0;
+  --atlas-accent-hover: #7a82fb;
+  --atlas-accent-active: #4a44dd;
+  --atlas-accent-contrast: #ffffff;
+
+  --atlas-success-surface: rgba(51, 168, 104, 0.14);
+  --atlas-success-border: rgba(51, 168, 104, 0.4);
+  --atlas-success-solid: #33a868;
+  --atlas-success-text: #86d6a6;
+
+  --atlas-warning-surface: rgba(217, 158, 43, 0.14);
+  --atlas-warning-border: rgba(217, 158, 43, 0.4);
+  --atlas-warning-solid: #d99e2b;
+  --atlas-warning-text: #ecc878;
+
+  --atlas-danger-surface: rgba(207, 79, 79, 0.14);
+  --atlas-danger-border: rgba(207, 79, 79, 0.42);
+  --atlas-danger-solid: #cf4f4f;
+  --atlas-danger-text: #e89a9a;
+
+  --atlas-info-surface: rgba(79, 134, 207, 0.14);
+  --atlas-info-border: rgba(79, 134, 207, 0.4);
+  --atlas-info-solid: #4f86cf;
+  --atlas-info-text: #8ab6e8;
+
+  --atlas-focus-ring: rgba(122, 130, 251, 0.55);
+
+  /* ── Radius / elevation / z-index / motion (shared across themes) ── */
+  --atlas-radius-sm: 0.375rem;
+  --atlas-radius-md: 0.625rem;
+  --atlas-radius-lg: 0.875rem;
+  --atlas-radius-xl: 1.25rem;
+  --atlas-radius-2xl: 1.75rem;
+  --atlas-radius-full: 9999px;
+
+  --atlas-elevation-sm: 0 1px 2px rgba(6, 8, 12, 0.32);
+  --atlas-elevation-md: 0 4px 16px rgba(6, 8, 12, 0.4);
+  --atlas-elevation-lg: 0 12px 40px rgba(6, 8, 12, 0.48);
+  --atlas-elevation-glow: 0 0 0 1px rgba(91, 94, 240, 0.18), 0 8px 32px rgba(91, 94, 240, 0.18);
+
+  --atlas-duration-instant: 80ms;
+  --atlas-duration-fast: 140ms;
+  --atlas-duration-base: 220ms;
+  --atlas-duration-slow: 360ms;
+  --atlas-duration-deliberate: 560ms;
+
+  --atlas-easing-standard: cubic-bezier(0.4, 0, 0.2, 1);
+  --atlas-easing-decelerate: cubic-bezier(0, 0, 0.2, 1);
+  --atlas-easing-accelerate: cubic-bezier(0.4, 0, 1, 1);
+  --atlas-easing-emphasized: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+/* ── Light theme ── */
+[data-theme="light"] {
+  --atlas-surface-canvas: #ffffff;
+  --atlas-surface-base: #f6f7f9;
+  --atlas-surface-raised: #ffffff;
+  --atlas-surface-overlay: #ffffff;
+  --atlas-surface-inverted: #12161f;
+
+  --atlas-border-subtle: rgba(11, 14, 21, 0.06);
+  --atlas-border-default: rgba(11, 14, 21, 0.12);
+  --atlas-border-strong: rgba(11, 14, 21, 0.2);
+  --atlas-border-focus: #4a44dd;
+
+  --atlas-text-primary: #12161f;
+  --atlas-text-secondary: #39414f;
+  --atlas-text-tertiary: #646e82;
+  --atlas-text-inverted: #f6f7f9;
+  --atlas-text-on-accent: #ffffff;
+  --atlas-text-disabled: #b3bac7;
+
+  --atlas-accent-subtle: rgba(74, 68, 221, 0.1);
+  --atlas-accent-default: #4a44dd;
+  --atlas-accent-hover: #3d36bb;
+  --atlas-accent-active: #332e96;
+  --atlas-accent-contrast: #ffffff;
+
+  --atlas-focus-ring: rgba(74, 68, 221, 0.45);
+}
+
+/* ── High-contrast preference (doc 06) ── */
+@media (prefers-contrast: more) {
+  :root {
+    --atlas-text-secondary: #d6dae2;
+    --atlas-text-tertiary: #b3bac7;
+    --atlas-border-default: rgba(255, 255, 255, 0.24);
+    --atlas-border-strong: rgba(255, 255, 255, 0.4);
+  }
+  [data-theme="light"] {
+    --atlas-text-secondary: #1c212e;
+    --atlas-text-tertiary: #2b3242;
+    --atlas-border-default: rgba(11, 14, 21, 0.28);
+  }
+}

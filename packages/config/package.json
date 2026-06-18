@@ -15,7 +15,11 @@
     "./eslint/react": "./eslint/react.js",
     "./prettier": "./prettier/index.js"
   },
-  "files": ["tsconfig", "eslint", "prettier"],
+  "files": [
+    "tsconfig",
+    "eslint",
+    "prettier"
+  ],
   "devDependencies": {
     "@eslint/js": "^9.17.0",
     "@typescript-eslint/eslint-plugin": "^8.18.1",

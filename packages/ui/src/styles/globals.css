@@ -1,0 +1,66 @@
+/**
+ * Atlas global styles. Imported once at the app root, after Tailwind's base.
+ * Defines design-system keyframes and base element defaults.
+ */
+
+@import "../tokens/tokens.css";
+
+@keyframes atlas-shimmer {
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes atlas-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@layer base {
+  :root {
+    color-scheme: dark;
+  }
+  [data-theme="light"] {
+    color-scheme: light;
+  }
+
+  html {
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  body {
+    background-color: var(--atlas-surface-canvas);
+    color: var(--atlas-text-primary);
+    font-family:
+      "Inter",
+      system-ui,
+      -apple-system,
+      "Segoe UI",
+      Roboto,
+      sans-serif;
+  }
+
+  /* Elegant, consistent focus across the system (doc 04 / doc 06). */
+  :focus-visible {
+    outline: none;
+  }
+
+  /* Respect reduced-motion globally as a safety net (doc 04 / doc 06). */
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
