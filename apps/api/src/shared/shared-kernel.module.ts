@@ -25,7 +25,7 @@ import { MeasurementRecorded } from "../modules/progress/domain/events.js";
     PinoAuditLogger,
     { provide: AUDIT_LOGGER, useExisting: PinoAuditLogger },
   ],
-  exports: [DOMAIN_EVENT_PUBLISHER, AUDIT_LOGGER],
+  exports: [DOMAIN_EVENT_PUBLISHER, AUDIT_LOGGER, InProcessEventDispatcher],
 })
 export class SharedKernelModule implements OnModuleInit {
   constructor(

@@ -3,11 +3,12 @@
 import { type ComponentType, type SVGProps, useEffect, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
-import { type WorkoutSummaryView } from "@atlas/contracts";
+import { type GamificationOverview, type WorkoutSummaryView } from "@atlas/contracts";
 import { Button, Card, Skeleton, cn } from "@atlas/ui";
 import { useAuth } from "@/features/auth/auth-context";
 import { workoutsService } from "@/services/workouts.service";
 import { exercisesService } from "@/services/exercises.service";
+import { gamificationService } from "@/services/gamification.service";
 import { HERO_IMAGES, MUSCLE_IMAGES } from "@/features/media/fitness-images";
 
 /** The Core dashboard (blueprint/07 "Core", 03): greeting, summary, shortcuts. */
@@ -15,6 +16,7 @@ export function Dashboard() {
   const { user } = useAuth();
   const [workouts, setWorkouts] = useState<WorkoutSummaryView[] | null>(null);
   const [exerciseCount, setExerciseCount] = useState<number | null>(null);
+  const [gamification, setGamification] = useState<GamificationOverview | null>(null);
 
   useEffect(() => {
     let active = true;
@@ -26,6 +28,10 @@ export function Dashboard() {
       .list({})
       .then((page) => active && setExerciseCount(page.items.length))
       .catch(() => active && setExerciseCount(0));
+    gamificationService
+      .overview()
+      .then((data) => active && setGamification(data))
+      .catch(() => active && setGamification(null));
     return () => {
       active = false;
     };
@@ -85,6 +91,21 @@ export function Dashboard() {
         <Stat icon={ClockIcon} label="Em aberto" value={workouts === null ? null : open} />
         <Stat icon={CheckIcon} label="Concluídos" value={workouts === null ? null : completed} />
         <Stat icon={LibraryIcon} label="Exercícios no catálogo" value={exerciseCount} />
+      </section>
+
+      {/* 2.5 — Gamification highlight */}
+      <section className="flex flex-col gap-3">
+        <h2 className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">
+          Sua jornada
+        </h2>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <StreakHighlight streak={gamification?.streak ?? null} loading={gamification === null} />
+          <AchievementsHighlight
+            unlockedCount={gamification?.unlockedCount ?? null}
+            totalAchievements={gamification?.totalAchievements ?? null}
+            loading={gamification === null}
+          />
+        </div>
       </section>
 
       {/* 3 — Next workout */}
@@ -168,6 +189,13 @@ export function Dashboard() {
             image={MUSCLE_IMAGES.core}
             icon={TrendingIcon}
           />
+          <QuickAction
+            href="/achievements"
+            title="Conquistas"
+            description="Veja sua sequência, missões e medalhas."
+            image={MUSCLE_IMAGES.back}
+            icon={MedalIcon}
+          />
         </div>
       </section>
     </div>
@@ -213,6 +241,86 @@ function Stat({
         )}
       </div>
     </Card>
+  );
+}
+
+function StreakHighlight({
+  streak,
+  loading,
+}: {
+  streak: { current: number; longest: number; activeToday: boolean } | null;
+  loading: boolean;
+}) {
+  return (
+    <Link href="/achievements" className="group block">
+      <Card
+        interactive
+        padding="md"
+        className="flex h-full items-center gap-4 rounded-2xl border-accent/40 bg-accent-subtle"
+      >
+        <span className="text-4xl leading-none" role="img" aria-label="Sequência">
+          🔥
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          {loading ? (
+            <Skeleton className="h-9 w-24" />
+          ) : (
+            <div className="flex items-baseline gap-2">
+              <span className="text-3xl font-bold tabular-nums text-accent sm:text-4xl">
+                {streak?.current ?? 0}
+              </span>
+              <span className="text-sm font-medium text-text-secondary">
+                {streak?.current === 1 ? "dia seguido" : "dias seguidos"}
+              </span>
+            </div>
+          )}
+          {loading ? (
+            <Skeleton className="h-4 w-32" />
+          ) : streak && streak.current > 0 ? (
+            <p className="text-xs text-text-tertiary">
+              {streak.activeToday ? "Ativo hoje ✓ · " : ""}Recorde: {streak.longest}{" "}
+              {streak.longest === 1 ? "dia" : "dias"}
+            </p>
+          ) : (
+            <p className="text-xs text-text-secondary">Comece hoje a sua sequência! ✨</p>
+          )}
+        </div>
+      </Card>
+    </Link>
+  );
+}
+
+function AchievementsHighlight({
+  unlockedCount,
+  totalAchievements,
+  loading,
+}: {
+  unlockedCount: number | null;
+  totalAchievements: number | null;
+  loading: boolean;
+}) {
+  return (
+    <Link href="/achievements" className="group block">
+      <Card interactive padding="md" className="flex h-full items-center gap-4 rounded-2xl">
+        <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-accent-subtle text-accent">
+          <MedalIcon className="h-6 w-6" />
+        </span>
+        <div className="flex min-w-0 flex-col gap-1">
+          <span className="text-xs uppercase tracking-wide text-text-tertiary">Conquistas</span>
+          {loading ? (
+            <Skeleton className="h-8 w-20" />
+          ) : (
+            <span className="text-2xl font-semibold text-text-primary sm:text-3xl">
+              {unlockedCount ?? 0}
+              <span className="text-base font-medium text-text-tertiary">
+                /{totalAchievements ?? 0}
+              </span>
+            </span>
+          )}
+          <span className="text-xs font-medium text-accent">Ver minha jornada →</span>
+        </div>
+      </Card>
+    </Link>
   );
 }
 
@@ -369,6 +477,25 @@ function TrendingIcon(props: SVGProps<SVGSVGElement>) {
     >
       <path d="M3 17l6-6 4 4 8-8" />
       <path d="M17 7h4v4" />
+    </svg>
+  );
+}
+
+function MedalIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M7.5 2h9l-3 6h-3z" />
+      <circle cx="12" cy="15" r="6" />
+      <path d="m12 12 1.2 2.4 2.6.4-1.9 1.8.5 2.6L12 18l-2.4 1.2.5-2.6-1.9-1.8 2.6-.4z" />
     </svg>
   );
 }

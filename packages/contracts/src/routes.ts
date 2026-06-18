@@ -43,4 +43,8 @@ export const API_ROUTES = {
     /** Derived records, stats, and the weight chart series. */
     summary: "/v1/progress/summary",
   },
+  gamification: {
+    /** Combined streak + missions + achievements snapshot. */
+    overview: "/v1/gamification/overview",
+  },
 } as const;

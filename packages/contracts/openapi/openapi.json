@@ -12,7 +12,8 @@
     { "name": "Core", "description": "The user's personal command center" },
     { "name": "Workouts", "description": "Create, organize, and complete workouts" },
     { "name": "Exercises", "description": "The curated exercise catalogue" },
-    { "name": "Progress", "description": "Body measurements, history, and personal records" }
+    { "name": "Progress", "description": "Body measurements, history, and personal records" },
+    { "name": "Gamification", "description": "Streak, missions, and achievements" }
   ],
   "security": [{ "bearerAuth": [] }],
   "paths": {
@@ -536,6 +537,23 @@
           "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/v1/gamification/overview": {
+      "get": {
+        "tags": ["Gamification"],
+        "summary": "Streak, missions, and achievements snapshot",
+        "responses": {
+          "200": {
+            "description": "Gamification overview",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/GamificationOverview" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -1004,6 +1022,55 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/WeightPoint" }
           }
+        }
+      },
+      "StreakView": {
+        "type": "object",
+        "required": ["current", "longest", "activeToday"],
+        "properties": {
+          "current": { "type": "integer" },
+          "longest": { "type": "integer" },
+          "activeToday": { "type": "boolean" }
+        }
+      },
+      "MissionView": {
+        "type": "object",
+        "required": ["key", "period", "title", "description", "progress", "target", "completed"],
+        "properties": {
+          "key": { "type": "string" },
+          "period": { "type": "string", "enum": ["daily", "weekly"] },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "progress": { "type": "integer" },
+          "target": { "type": "integer" },
+          "completed": { "type": "boolean" }
+        }
+      },
+      "AchievementView": {
+        "type": "object",
+        "required": ["key", "title", "description", "unlockedAt"],
+        "properties": {
+          "key": { "type": "string" },
+          "title": { "type": "string" },
+          "description": { "type": "string" },
+          "unlockedAt": { "type": ["string", "null"], "format": "date-time" }
+        }
+      },
+      "GamificationOverview": {
+        "type": "object",
+        "required": ["streak", "missions", "achievements", "unlockedCount", "totalAchievements"],
+        "properties": {
+          "streak": { "$ref": "#/components/schemas/StreakView" },
+          "missions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MissionView" }
+          },
+          "achievements": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AchievementView" }
+          },
+          "unlockedCount": { "type": "integer" },
+          "totalAchievements": { "type": "integer" }
         }
       }
     }
