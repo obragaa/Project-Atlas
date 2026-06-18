@@ -58,6 +58,18 @@ importers:
         specifier: ^8.18.1
         version: 8.61.1(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
 
+  packages/contracts:
+    devDependencies:
+      '@atlas/config':
+        specifier: workspace:*
+        version: link:../config
+      eslint:
+        specifier: ^9.17.0
+        version: 9.39.4(jiti@1.21.7)
+      typescript:
+        specifier: ^5.7.2
+        version: 5.9.3
+
   packages/ui:
     dependencies:
       class-variance-authority:

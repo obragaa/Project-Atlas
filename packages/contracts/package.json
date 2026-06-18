@@ -1,0 +1,24 @@
+{
+  "name": "@atlas/contracts",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Atlas API contract (OpenAPI) and shared transport types — the source of truth for the API.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
+    },
+    "./openapi.json": "./openapi/openapi.json"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "clean": "rimraf dist .turbo *.tsbuildinfo"
+  },
+  "devDependencies": {
+    "@atlas/config": "workspace:*",
+    "eslint": "^9.17.0",
+    "typescript": "^5.7.2"
+  }
+}

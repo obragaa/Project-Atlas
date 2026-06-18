@@ -1,0 +1,369 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Atlas API",
+    "version": "1.0.0",
+    "description": "Contract for the Atlas platform API. This document is the source of truth; implementation follows it (blueprint/14 - API.md, ADR-001 Contract First). Errors follow RFC 7807; collections use cursor pagination."
+  },
+  "servers": [{ "url": "/", "description": "Relative to the API host" }],
+  "tags": [
+    { "name": "Health", "description": "Liveness and readiness probes" },
+    { "name": "Auth", "description": "Identity, authentication, and sessions" },
+    { "name": "Core", "description": "The user's personal command center" }
+  ],
+  "security": [{ "bearerAuth": [] }],
+  "paths": {
+    "/health/live": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Liveness probe",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is alive",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthReport" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": ["Health"],
+        "summary": "Readiness probe",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Service is ready to receive traffic",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthReport" }
+              }
+            }
+          },
+          "503": {
+            "description": "Service not ready",
+            "content": {
+              "application/problem+json": {
+                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/auth/register": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Register a new account",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RegisterRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created and session issued",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthSession" }
+              }
+            }
+          },
+          "409": { "$ref": "#/components/responses/Conflict" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/auth/login": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Authenticate with credentials",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/LoginRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Authenticated",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthSession" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationError" },
+          "429": { "$ref": "#/components/responses/TooManyRequests" }
+        }
+      }
+    },
+    "/v1/auth/refresh": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Rotate the refresh token and issue a new pair",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RefreshRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "New token pair",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/TokenPair" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/v1/auth/logout": {
+      "post": {
+        "tags": ["Auth"],
+        "summary": "Revoke the current session",
+        "responses": {
+          "204": { "description": "Session revoked" },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/v1/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "summary": "Get the authenticated user",
+        "responses": {
+          "200": {
+            "description": "The authenticated user",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AuthenticatedUser" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/v1/core/summary": {
+      "get": {
+        "tags": ["Core"],
+        "summary": "Get the Core dashboard summary",
+        "responses": {
+          "200": {
+            "description": "Core summary",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/CoreSummary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "responses": {
+      "Unauthorized": {
+        "description": "Authentication required or failed",
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+          }
+        }
+      },
+      "Conflict": {
+        "description": "Resource conflict (e.g. email already registered)",
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "Request failed validation",
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+          }
+        }
+      },
+      "TooManyRequests": {
+        "description": "Rate limit exceeded",
+        "content": {
+          "application/problem+json": {
+            "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "HealthReport": {
+        "type": "object",
+        "required": ["status", "checkedAt", "version"],
+        "properties": {
+          "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
+          "checkedAt": { "type": "string", "format": "date-time" },
+          "version": { "type": "string" }
+        }
+      },
+      "ProblemDetails": {
+        "type": "object",
+        "required": ["type", "title", "status", "detail", "category", "traceId"],
+        "properties": {
+          "type": { "type": "string", "format": "uri" },
+          "title": { "type": "string" },
+          "status": { "type": "integer" },
+          "detail": { "type": "string" },
+          "instance": { "type": "string" },
+          "category": {
+            "type": "string",
+            "enum": [
+              "validation",
+              "authentication",
+              "authorization",
+              "business_rule",
+              "conflict",
+              "not_found",
+              "rate_limit",
+              "infrastructure",
+              "unexpected"
+            ]
+          },
+          "traceId": { "type": "string" },
+          "issues": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ValidationIssue" }
+          }
+        }
+      },
+      "ValidationIssue": {
+        "type": "object",
+        "required": ["field", "message", "code"],
+        "properties": {
+          "field": { "type": "string" },
+          "message": { "type": "string" },
+          "code": { "type": "string" }
+        }
+      },
+      "RegisterRequest": {
+        "type": "object",
+        "required": ["email", "password", "displayName"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string", "minLength": 12, "maxLength": 128 },
+          "displayName": { "type": "string", "minLength": 2, "maxLength": 60 }
+        }
+      },
+      "LoginRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email": { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "RefreshRequest": {
+        "type": "object",
+        "required": ["refreshToken"],
+        "properties": {
+          "refreshToken": { "type": "string" }
+        }
+      },
+      "TokenPair": {
+        "type": "object",
+        "required": ["accessToken", "refreshToken", "expiresIn", "tokenType"],
+        "properties": {
+          "accessToken": { "type": "string" },
+          "refreshToken": { "type": "string" },
+          "expiresIn": { "type": "integer" },
+          "tokenType": { "type": "string", "enum": ["Bearer"] }
+        }
+      },
+      "AuthenticatedUser": {
+        "type": "object",
+        "required": ["id", "email", "displayName", "roles"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "email": { "type": "string", "format": "email" },
+          "displayName": { "type": "string" },
+          "roles": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "enum": ["user", "coach", "administrator", "support"]
+            }
+          }
+        }
+      },
+      "AuthSession": {
+        "type": "object",
+        "required": ["user", "tokens"],
+        "properties": {
+          "user": { "$ref": "#/components/schemas/AuthenticatedUser" },
+          "tokens": { "$ref": "#/components/schemas/TokenPair" }
+        }
+      },
+      "CoreSummary": {
+        "type": "object",
+        "required": ["greeting", "streak", "nextActions", "activeMissionCount"],
+        "properties": {
+          "greeting": { "type": "string" },
+          "streak": { "$ref": "#/components/schemas/StreakSummary" },
+          "nextActions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/CoreNextAction" }
+          },
+          "activeMissionCount": { "type": "integer" }
+        }
+      },
+      "StreakSummary": {
+        "type": "object",
+        "required": ["current", "best"],
+        "properties": {
+          "current": { "type": "integer" },
+          "best": { "type": "integer" }
+        }
+      },
+      "CoreNextAction": {
+        "type": "object",
+        "required": ["id", "label", "kind", "href"],
+        "properties": {
+          "id": { "type": "string" },
+          "label": { "type": "string" },
+          "kind": {
+            "type": "string",
+            "enum": ["workout", "mission", "progress", "ai", "nutrition"]
+          },
+          "href": { "type": "string" }
+        }
+      }
+    }
+  }
+}
