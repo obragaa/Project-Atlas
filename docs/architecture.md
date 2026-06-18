@@ -83,6 +83,25 @@ domain module (`apps/api/src/shared`, wired by the global `SharedKernelModule`):
 | Refresh tokens hashed at rest (keyed SHA-256, optional pepper)            | ✅                       |
 | Domain-event dispatch + audit channel (register/login/refresh/logout)     | ✅                       |
 
+## What is implemented (Phase 3 — Core experience, in progress)
+
+The first business domain after auth. The Core dashboard aggregates these
+domains, so they come first (ADR-0003).
+
+| Area                                                                            | Status              |
+| ------------------------------------------------------------------------------- | ------------------- |
+| Workouts domain: `Workout` aggregate → items → sets, value objects, events      | ✅ (unit-tested)    |
+| Workouts use cases: create/get/list/update/delete/complete/duplicate            | ✅                  |
+| Workouts persistence: Drizzle tables + migration `0001`, `PostgresWorkoutRepo`  | ✅ (PGlite integ.)  |
+| Workouts API: contract-first, RFC 7807, cursor pagination, ownership 404        | ✅ (flow-verified)  |
+| `WorkoutCompleted` event → audit channel                                        | ✅ (flow-verified)  |
+| Web: `/workouts` board (list/create/complete/duplicate/delete) via the contract | ✅ (build-verified) |
+
+The shared `@atlas/contracts` package now **builds to `dist`** (CJS + d.ts):
+once the API consumes a runtime _value_ from it (e.g. `LOAD_UNITS`), the package
+must be loadable at runtime, not just at type-check. `turbo`'s `^build` ordering
+builds it before its consumers.
+
 ### Resolved (were Phase 1 tracked exceptions)
 
 - **In-memory `UserRepository`** → resolved by `PostgresUserRepository`
@@ -121,8 +140,9 @@ domain module (`apps/api/src/shared`, wired by the global `SharedKernelModule`):
   adapters, migrations (doc 13), Redis-backed sessions + refresh-token
   rotation/revocation (doc 15), readiness probe checks dependencies, audit
   channel and domain-event dispatch.
-- **Phase 3 — Core experience:** the Core dashboard (docs 03/07), Workouts,
-  Exercises, Progress, Missions/Gamification (doc 09) as domain modules.
+- **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003) as the
+  first domain module; next the Core dashboard (docs 03/07), Exercises, Progress,
+  and Missions/Gamification (doc 09) — then the Core aggregates them.
 - **Phase 4 — Atlas AI:** the AI Gateway, Context/Prompt/Tool engines, prompt
   registry, guardrails, observability (docs 10/22).
 - **Phase 5 — Observability & delivery hardening:** OpenTelemetry traces/metrics

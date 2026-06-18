@@ -12,6 +12,7 @@ deviation from it.
 | --------------------------------------- | --------------------- | -------- |
 | [0001](./0001-technology-stack.md)      | Technology Stack      | Accepted |
 | [0002](./0002-llm-provider-strategy.md) | LLM Provider Strategy | Accepted |
+| [0003](./0003-workouts-domain.md)       | Workouts Domain Model | Accepted |
 
 ## Template
 

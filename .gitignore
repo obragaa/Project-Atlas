@@ -37,3 +37,6 @@ Thumbs.db
 .vscode/*
 !.vscode/extensions.json
 !.vscode/settings.recommended.json
+
+# Local agent tooling (Claude Code) — never commit
+.claude/

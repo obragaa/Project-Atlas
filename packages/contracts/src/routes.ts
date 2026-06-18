@@ -19,4 +19,14 @@ export const API_ROUTES = {
   core: {
     summary: "/v1/core/summary",
   },
+  workouts: {
+    /** Collection: POST creates, GET lists (cursor-paginated). */
+    collection: "/v1/workouts",
+    /** Item: GET / PUT / DELETE a single workout by id. */
+    byId: (id: string) => `/v1/workouts/${id}`,
+    /** Mark a workout completed (emits WorkoutCompleted). */
+    completion: (id: string) => `/v1/workouts/${id}/completion`,
+    /** Duplicate a workout into a fresh draft. */
+    duplication: (id: string) => `/v1/workouts/${id}/duplication`,
+  },
 } as const;

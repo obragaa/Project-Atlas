@@ -12,14 +12,16 @@
  */
 export const AUDIT_LOGGER = Symbol("AUDIT_LOGGER");
 
-/** Auditable actions (blueprint/15 "Audit Trail"). Extend as modules grow. */
+/** Auditable actions (blueprint/15 "Audit Trail", 13 "Auditoria"). Extend as
+ * modules grow. */
 export type AuditAction =
   | "auth.register"
   | "auth.login"
   | "auth.login_failed"
   | "auth.token_refreshed"
   | "auth.logout"
-  | "auth.session_revoked";
+  | "auth.session_revoked"
+  | "workout.completed";
 
 export type AuditOutcome = "success" | "failure";
 

@@ -4,6 +4,7 @@ import { InProcessEventDispatcher } from "./events/in-process-event-dispatcher.j
 import { AUDIT_LOGGER, type AuditLogger } from "./audit/audit-logger.port.js";
 import { PinoAuditLogger } from "./audit/pino-audit-logger.js";
 import { UserRegistered } from "../modules/auth/domain/events.js";
+import { WorkoutCompleted } from "../modules/workouts/domain/events.js";
 
 /**
  * Shared kernel infrastructure (blueprint/12). Owns the cross-cutting, framework-
@@ -38,6 +39,16 @@ export class SharedKernelModule implements OnModuleInit {
         action: "auth.register",
         outcome: "success",
         userId: event.aggregateId,
+      });
+    });
+
+    // Completing a workout is an auditable fact (blueprint/13 "Auditoria":
+    // "Conclusão de treino").
+    this.dispatcher.on<WorkoutCompleted>(WorkoutCompleted.name, (event) => {
+      this.audit.record({
+        action: "workout.completed",
+        outcome: "success",
+        userId: event.userId,
       });
     });
   }
