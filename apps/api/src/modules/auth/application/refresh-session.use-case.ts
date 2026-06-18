@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { type TokenPair } from "@atlas/contracts";
 import { AuthenticationError } from "../../../shared/domain/errors.js";
+import { AUDIT_LOGGER, type AuditLogger } from "../../../shared/audit/audit-logger.port.js";
 import {
   REFRESH_TOKEN_HASHER,
   type RefreshTokenHasher,
@@ -32,6 +33,7 @@ export class RefreshSessionUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(SESSION_STORE) private readonly sessions: SessionStore,
     @Inject(REFRESH_TOKEN_HASHER) private readonly refreshHasher: RefreshTokenHasher,
+    @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
   async execute(command: RefreshSessionCommand): Promise<TokenPair> {
@@ -58,6 +60,16 @@ export class RefreshSessionUseCase {
     });
 
     if (outcome.kind === "reuse_detected") {
+      // A superseded token was replayed: the store revoked the whole family.
+      // This is a security event, not a routine failure (blueprint/15 Audit).
+      this.audit.record({
+        action: "auth.session_revoked",
+        outcome: "failure",
+        userId: claims.sub,
+        sessionId: claims.sid,
+        familyId: claims.fid,
+        reason: "auth.refresh_reuse_detected",
+      });
       throw new AuthenticationError(
         "Detectamos um problema de segurança na sua sessão. Entre novamente.",
         "auth.refresh_reuse_detected",
@@ -70,6 +82,14 @@ export class RefreshSessionUseCase {
     const accessToken = await this.tokens.issueAccessToken({
       sub: claims.sub,
       roles: [...user.roles],
+    });
+
+    this.audit.record({
+      action: "auth.token_refreshed",
+      outcome: "success",
+      userId: claims.sub,
+      sessionId: claims.sid,
+      familyId: claims.fid,
     });
 
     return {

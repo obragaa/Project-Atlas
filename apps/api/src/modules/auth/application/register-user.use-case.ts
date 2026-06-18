@@ -2,6 +2,10 @@ import { Inject, Injectable } from "@nestjs/common";
 import { type AuthSession } from "@atlas/contracts";
 import { ConflictError } from "../../../shared/domain/errors.js";
 import {
+  DOMAIN_EVENT_PUBLISHER,
+  type DomainEventPublisher,
+} from "../../../shared/domain/domain-event-publisher.js";
+import {
   PASSWORD_HASHER,
   type PasswordHasher,
   USER_REPOSITORY,
@@ -33,6 +37,7 @@ export class RegisterUserUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     private readonly sessionFactory: SessionFactory,
+    @Inject(DOMAIN_EVENT_PUBLISHER) private readonly events: DomainEventPublisher,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<AuthSession> {
@@ -51,6 +56,9 @@ export class RegisterUserUseCase {
     });
 
     await this.users.save(user);
+
+    // The account is persisted; now its facts (UserRegistered -> audit) fire.
+    await this.events.publishFor(user);
 
     return this.sessionFactory.openSession(user, command.session);
   }

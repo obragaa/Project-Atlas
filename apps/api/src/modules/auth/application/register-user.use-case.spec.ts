@@ -1,6 +1,6 @@
 import { RegisterUserUseCase } from "./register-user.use-case";
 import { FakeUserRepository } from "../testing/fake-user.repository";
-import { buildFakeSessionFactory } from "../testing/build-session-factory";
+import { buildFakeSessionFactory, fakeEventPublisher } from "../testing/build-session-factory";
 import { type PasswordHasher } from "../domain/ports";
 import { Email } from "../domain/value-objects/email";
 
@@ -19,7 +19,12 @@ const fakeHasher: PasswordHasher = {
 
 describe("RegisterUserUseCase", () => {
   const buildUseCase = () =>
-    new RegisterUserUseCase(new FakeUserRepository(), fakeHasher, buildFakeSessionFactory());
+    new RegisterUserUseCase(
+      new FakeUserRepository(),
+      fakeHasher,
+      buildFakeSessionFactory(),
+      fakeEventPublisher,
+    );
 
   const validCommand = {
     email: "athlete@atlas.app",
@@ -41,7 +46,12 @@ describe("RegisterUserUseCase", () => {
   it("rejects a duplicate email with a conflict", async () => {
     const useCase = buildUseCase();
     const repo = new FakeUserRepository();
-    const sharedUseCase = new RegisterUserUseCase(repo, fakeHasher, buildFakeSessionFactory());
+    const sharedUseCase = new RegisterUserUseCase(
+      repo,
+      fakeHasher,
+      buildFakeSessionFactory(),
+      fakeEventPublisher,
+    );
 
     await sharedUseCase.execute(validCommand);
     await expect(sharedUseCase.execute(validCommand)).rejects.toMatchObject({
@@ -59,7 +69,12 @@ describe("RegisterUserUseCase", () => {
 
   it("never stores the plaintext password", async () => {
     const repo = new FakeUserRepository();
-    const useCase = new RegisterUserUseCase(repo, fakeHasher, buildFakeSessionFactory());
+    const useCase = new RegisterUserUseCase(
+      repo,
+      fakeHasher,
+      buildFakeSessionFactory(),
+      fakeEventPublisher,
+    );
     await useCase.execute(validCommand);
 
     const stored = await repo.findByEmail(Email.create(validCommand.email));

@@ -8,6 +8,7 @@ import {
   getCorrelationId,
 } from "./shared/http/correlation-id.middleware.js";
 import { DatabaseModule } from "./shared/database/database.module.js";
+import { SharedKernelModule } from "./shared/shared-kernel.module.js";
 import { InfraModule } from "./infra/infra.module.js";
 import { CacheModule } from "./infra/cache/cache.module.js";
 import { HealthModule } from "./modules/health/health.module.js";
@@ -33,13 +34,20 @@ import { type Request } from "express";
         customProps: (req) => ({
           correlationId: getCorrelationId(req as unknown as Request),
         }),
-        // Never log secrets or sensitive headers (blueprint/16 - Security.md).
+        // Never log secrets or sensitive headers (blueprint/16 - Security.md,
+        // 15 "0 credenciais em logs"). Covers every auth body shape: register/
+        // login (password), refresh/logout (refreshToken), and any echoed token.
         redact: {
           paths: [
             "req.headers.authorization",
             "req.headers.cookie",
             "req.body.password",
             "req.body.refreshToken",
+            "req.body.accessToken",
+            "res.body.tokens.accessToken",
+            "res.body.tokens.refreshToken",
+            "res.body.accessToken",
+            "res.body.refreshToken",
           ],
           remove: true,
         },
@@ -47,6 +55,7 @@ import { type Request } from "express";
       },
     }),
     InfraModule,
+    SharedKernelModule,
     CacheModule,
     DatabaseModule.forRoot(),
     AuthModule,

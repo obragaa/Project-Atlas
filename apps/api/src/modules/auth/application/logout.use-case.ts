@@ -1,4 +1,5 @@
 import { Inject, Injectable } from "@nestjs/common";
+import { AUDIT_LOGGER, type AuditLogger } from "../../../shared/audit/audit-logger.port.js";
 import { TOKEN_SERVICE, type TokenService } from "../domain/ports.js";
 import { SESSION_STORE, type SessionStore } from "../domain/session-store.port.js";
 
@@ -22,6 +23,7 @@ export class LogoutUseCase {
   constructor(
     @Inject(TOKEN_SERVICE) private readonly tokens: TokenService,
     @Inject(SESSION_STORE) private readonly sessions: SessionStore,
+    @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
   async execute(command: LogoutCommand): Promise<void> {
@@ -37,9 +39,22 @@ export class LogoutUseCase {
 
     if (command.allDevices) {
       await this.sessions.revokeAllForUser(claims.sub, ttl);
+      this.audit.record({
+        action: "auth.logout",
+        outcome: "success",
+        userId: claims.sub,
+        reason: "all_devices",
+      });
       return;
     }
 
     await this.sessions.revokeFamily(claims.fid, ttl);
+    this.audit.record({
+      action: "auth.logout",
+      outcome: "success",
+      userId: claims.sub,
+      sessionId: claims.sid,
+      familyId: claims.fid,
+    });
   }
 }

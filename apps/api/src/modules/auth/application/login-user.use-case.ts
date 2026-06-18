@@ -1,6 +1,7 @@
 import { Inject, Injectable } from "@nestjs/common";
 import { type AuthSession } from "@atlas/contracts";
 import { AuthenticationError } from "../../../shared/domain/errors.js";
+import { AUDIT_LOGGER, type AuditLogger } from "../../../shared/audit/audit-logger.port.js";
 import {
   PASSWORD_HASHER,
   type PasswordHasher,
@@ -35,6 +36,7 @@ export class LoginUserUseCase {
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
     private readonly sessionFactory: SessionFactory,
+    @Inject(AUDIT_LOGGER) private readonly audit: AuditLogger,
   ) {}
 
   async execute(command: LoginUserCommand): Promise<AuthSession> {
@@ -45,9 +47,25 @@ export class LoginUserUseCase {
     const passwordValid = await this.hasher.verify(hashToCheck, command.password);
 
     if (!user || !passwordValid) {
+      // Audit the failure without revealing whether the account exists (the
+      // userId is only recorded when the credentials actually matched).
+      this.audit.record({
+        action: "auth.login_failed",
+        outcome: "failure",
+        userId: user?.id.toString(),
+        deviceId: command.session.deviceId,
+        reason: "auth.invalid_credentials",
+      });
       throw new AuthenticationError("E-mail ou senha inválidos.", "auth.invalid_credentials");
     }
 
-    return this.sessionFactory.openSession(user, command.session);
+    const session = await this.sessionFactory.openSession(user, command.session);
+    this.audit.record({
+      action: "auth.login",
+      outcome: "success",
+      userId: user.id.toString(),
+      deviceId: command.session.deviceId,
+    });
+    return session;
   }
 }

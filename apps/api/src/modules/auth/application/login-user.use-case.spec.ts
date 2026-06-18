@@ -1,7 +1,11 @@
 import { LoginUserUseCase } from "./login-user.use-case";
 import { RegisterUserUseCase } from "./register-user.use-case";
 import { FakeUserRepository } from "../testing/fake-user.repository";
-import { buildFakeSessionFactory } from "../testing/build-session-factory";
+import {
+  buildFakeSessionFactory,
+  fakeEventPublisher,
+  fakeAuditLogger,
+} from "../testing/build-session-factory";
 import { type PasswordHasher } from "../domain/ports";
 
 const hashRegistry = new Map<string, string>();
@@ -19,10 +23,10 @@ const session = { deviceId: "device-1", riskLevel: "low" as const };
 describe("LoginUserUseCase", () => {
   const repo = new FakeUserRepository();
   const sessionFactory = buildFakeSessionFactory();
-  const login = new LoginUserUseCase(repo, fakeHasher, sessionFactory);
+  const login = new LoginUserUseCase(repo, fakeHasher, sessionFactory, fakeAuditLogger);
 
   beforeAll(async () => {
-    await new RegisterUserUseCase(repo, fakeHasher, sessionFactory).execute({
+    await new RegisterUserUseCase(repo, fakeHasher, sessionFactory, fakeEventPublisher).execute({
       email: "athlete@atlas.app",
       password: "a-strong-passphrase",
       displayName: "Atleta",

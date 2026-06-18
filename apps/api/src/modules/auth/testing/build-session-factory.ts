@@ -1,6 +1,8 @@
 import { SessionFactory } from "../application/session.factory.js";
 import { InMemorySessionStore } from "../infrastructure/in-memory-session.store.js";
 import { type RefreshTokenHasher, type TokenService } from "../domain/ports.js";
+import { type DomainEventPublisher } from "../../../shared/domain/domain-event-publisher.js";
+import { type AuditLogger } from "../../../shared/audit/audit-logger.port.js";
 
 /**
  * Test fakes for the session subsystem. Builds a real `SessionFactory` over an
@@ -24,3 +26,15 @@ export const fakeRefreshHasher: RefreshTokenHasher = {
 export function buildFakeSessionFactory(): SessionFactory {
   return new SessionFactory(fakeTokenService, new InMemorySessionStore(), fakeRefreshHasher);
 }
+
+/** A no-op domain-event publisher: dispatch side effects are out of scope for
+ * use-case unit tests (the dispatcher has its own tests). */
+export const fakeEventPublisher: DomainEventPublisher = {
+  publish: () => Promise.resolve(),
+  publishFor: () => Promise.resolve(),
+};
+
+/** A no-op audit logger for use-case unit tests. */
+export const fakeAuditLogger: AuditLogger = {
+  record: () => undefined,
+};
