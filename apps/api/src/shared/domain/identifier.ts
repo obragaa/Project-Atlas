@@ -27,8 +27,8 @@ export class Identifier<TBrand extends string> {
     return other instanceof Identifier && other.value === this.value;
   }
 
-  /** Generate a fresh opaque identifier. */
-  protected static generate(): string {
+  /** Generate a fresh opaque UUID string for subclass factories. */
+  protected static newId(): string {
     return uuidv4();
   }
 }

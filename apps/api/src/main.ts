@@ -1,6 +1,6 @@
 import "reflect-metadata";
 import { config as loadDotenv } from "dotenv";
-import { ValidationPipe } from "@nestjs/common";
+import { ValidationPipe, VersioningType } from "@nestjs/common";
 
 // Load .env into process.env before any configuration is read. The monorepo's
 // single .env lives at the repository root (blueprint/19 - DevOps.md:
@@ -12,6 +12,7 @@ import { Logger } from "nestjs-pino";
 import { AppModule } from "./app.module.js";
 import { corsOrigins, loadEnvironment } from "./config/environment.js";
 import { ProblemDetailsFilter } from "./shared/http/problem-details.filter.js";
+import { validationExceptionFactory } from "./shared/http/validation-exception.factory.js";
 
 /**
  * API bootstrap. Applies secure-by-default cross-cutting concerns: strict
@@ -26,12 +27,17 @@ async function bootstrap(): Promise<void> {
 
   app.useLogger(app.get(Logger));
 
+  // URI versioning: /v1/... (blueprint/14 - API.md "Versionamento"). Health
+  // probes are unversioned and excluded.
+  app.enableVersioning({ type: VersioningType.URI, defaultVersion: "1" });
+
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,
       transform: true,
       transformOptions: { enableImplicitConversion: true },
+      exceptionFactory: validationExceptionFactory,
     }),
   );
 
