@@ -23,8 +23,10 @@ coverage/
 *.pem
 *.key
 
-# Logs
+# Logs (including transient process capture from local verification)
 *.log
+*.err
+*.out
 npm-debug.log*
 pnpm-debug.log*
 
