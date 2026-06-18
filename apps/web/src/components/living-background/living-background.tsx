@@ -4,49 +4,44 @@ import { usePrefersReducedMotion } from "@atlas/ui";
 
 /**
  * LivingBackground — the Atlas canvas is never fully static (blueprint/00 §9,
- * 01 "Background", 04 "Background Vivo"). Two slow aurora blooms drift behind
- * the content to create depth and a sense of life, never to draw attention.
+ * 01 "Background", 04 "Background Vivo"). A vivid aurora field drifts behind the
+ * content for depth and energy.
  *
- * Performance (blueprint/04, 17): animates only `transform`/`opacity`, sits on
- * its own compositor layer, and disables motion entirely under
- * `prefers-reduced-motion` — degrading to a still, elegant gradient.
+ * Performance (blueprint/04, 17): the motion is a slow `background-position`
+ * shift on pre-painted radial gradients — no per-frame blur or scale, so it
+ * composites cheaply. Disabled under `prefers-reduced-motion`, degrading to a
+ * still, rich gradient.
  */
 export function LivingBackground() {
   const reducedMotion = usePrefersReducedMotion();
 
   return (
     <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
-      {/* Base canvas tint. */}
+      {/* Deep base canvas. */}
       <div className="absolute inset-0 bg-surface-canvas" />
 
-      {/* Aurora bloom — accent indigo. */}
+      {/* Vivid aurora field — layered radial blooms that slowly drift. */}
       <div
-        className="absolute left-[-10%] top-[-15%] h-[55vmax] w-[55vmax] rounded-full opacity-60 blur-[120px]"
+        className="absolute inset-[-20%]"
         style={{
-          background:
-            "radial-gradient(circle at center, var(--atlas-accent-500) 0%, transparent 70%)",
-          animation: reducedMotion ? undefined : "atlas-aurora-a 26s ease-in-out infinite",
-          willChange: reducedMotion ? undefined : "transform",
+          backgroundImage: [
+            "radial-gradient(40% 50% at 18% 22%, rgba(91,94,240,0.40), transparent 70%)",
+            "radial-gradient(38% 46% at 82% 18%, rgba(51,185,166,0.30), transparent 70%)",
+            "radial-gradient(45% 55% at 70% 85%, rgba(122,130,251,0.28), transparent 72%)",
+            "radial-gradient(36% 44% at 30% 88%, rgba(27,154,138,0.22), transparent 72%)",
+          ].join(","),
+          backgroundSize: "200% 200%",
+          animation: reducedMotion ? undefined : "atlas-aurora-drift 28s ease-in-out infinite",
+          willChange: reducedMotion ? undefined : "background-position",
         }}
       />
 
-      {/* Aurora bloom — calm teal, offset for a layered, organic feel. */}
+      {/* Fine grain + vignette to anchor content and deepen the edges. */}
       <div
-        className="absolute bottom-[-20%] right-[-10%] h-[50vmax] w-[50vmax] rounded-full opacity-40 blur-[120px]"
+        className="absolute inset-0 opacity-[0.5]"
         style={{
           background:
-            "radial-gradient(circle at center, var(--atlas-teal-500) 0%, transparent 70%)",
-          animation: reducedMotion ? undefined : "atlas-aurora-b 32s ease-in-out infinite",
-          willChange: reducedMotion ? undefined : "transform",
-        }}
-      />
-
-      {/* Subtle vignette to anchor content and deepen the edges. */}
-      <div
-        className="absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(120% 120% at 50% 0%, transparent 50%, rgba(6,8,12,0.6) 100%)",
+            "radial-gradient(125% 125% at 50% 0%, transparent 45%, rgba(6,8,12,0.72) 100%)",
         }}
       />
     </div>

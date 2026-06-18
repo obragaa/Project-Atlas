@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import {
   type Equipment,
@@ -10,6 +11,7 @@ import {
   MUSCLE_GROUPS,
 } from "@atlas/contracts";
 import { Button, Card, Input, Skeleton, cn } from "@atlas/ui";
+import { exerciseImage } from "@/features/media/fitness-images";
 import { ApiError } from "@/services/api-client";
 import { exercisesService } from "@/services/exercises.service";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "./labels";
@@ -139,11 +141,13 @@ export function ExercisesCatalogue() {
       ) : null}
 
       {items === null ? (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+            <li key={i}>
+              <CardSkeleton />
+            </li>
           ))}
-        </div>
+        </ul>
       ) : items.length === 0 ? (
         <Card padding="lg" className="flex flex-col items-start gap-1">
           <p className="font-medium text-text-primary">Nenhum exercício encontrado</p>
@@ -152,8 +156,8 @@ export function ExercisesCatalogue() {
           </p>
         </Card>
       ) : (
-        <div className="flex flex-col gap-6">
-          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+        <div className="flex flex-col gap-8">
+          <ul className="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3">
             {items.map((ex) => (
               <li key={ex.id}>
                 <ExerciseCard exercise={ex} />
@@ -180,16 +184,54 @@ export function ExercisesCatalogue() {
 
 function ExerciseCard({ exercise }: { exercise: ExerciseSummaryView }) {
   return (
-    <Link href={`/exercises/${exercise.slug}`} className="block h-full">
-      <Card interactive padding="md" className="flex h-full flex-col gap-3">
-        <p className="font-medium text-text-primary">{exercise.name}</p>
-        <div className="flex flex-wrap gap-2">
-          <Pill accent>{MUSCLE_LABELS[exercise.primaryMuscle]}</Pill>
-          <Pill>{EQUIPMENT_LABELS[exercise.equipment]}</Pill>
-        </div>
-        <span className="mt-auto inline-block text-sm font-medium text-accent">Ver detalhes →</span>
-      </Card>
+    <Link
+      href={`/exercises/${exercise.slug}`}
+      className={cn(
+        "group block h-full overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised",
+        "transition-[transform,box-shadow,border-color] duration-base ease-emphasized",
+        "hover:-translate-y-0.5 hover:border-border hover:shadow-lg",
+        "motion-reduce:hover:translate-y-0",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+        "focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
+      )}
+    >
+      <div className="relative aspect-[16/9] overflow-hidden">
+        <Image
+          src={exerciseImage(exercise.primaryMuscle)}
+          alt=""
+          fill
+          sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+          className="object-cover transition-transform duration-slow ease-emphasized group-hover:scale-105 motion-reduce:group-hover:scale-100"
+        />
+        {/* Gradient overlay — mandatory for readability of the name below. */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/40 to-transparent"
+        />
+        <h3 className="absolute inset-x-0 bottom-0 p-4 text-lg font-medium leading-snug text-text-primary">
+          {exercise.name}
+        </h3>
+      </div>
+      <div className="flex flex-wrap items-center gap-2 p-4">
+        <Pill accent>{MUSCLE_LABELS[exercise.primaryMuscle]}</Pill>
+        <Pill>{EQUIPMENT_LABELS[exercise.equipment]}</Pill>
+        <span className="ml-auto text-sm font-medium text-accent transition-colors group-hover:text-accent-hover">
+          Ver detalhes →
+        </span>
+      </div>
     </Link>
+  );
+}
+
+function CardSkeleton() {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised">
+      <Skeleton className="aspect-[16/9] w-full rounded-none" />
+      <div className="flex flex-wrap gap-2 p-4">
+        <Skeleton className="h-6 w-20 rounded-full" />
+        <Skeleton className="h-6 w-16 rounded-full" />
+      </div>
+    </div>
   );
 }
 

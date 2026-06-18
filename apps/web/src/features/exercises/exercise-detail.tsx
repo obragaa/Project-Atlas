@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { type ExerciseView } from "@atlas/contracts";
 import { Card, Skeleton, cn } from "@atlas/ui";
+import { exerciseImage } from "@/features/media/fitness-images";
 import { exercisesService } from "@/services/exercises.service";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "./labels";
 
@@ -51,31 +53,54 @@ export function ExerciseDetail({ slug }: { slug: string }) {
 function Loaded({ exercise }: { exercise: ExerciseView }) {
   return (
     <article className="flex flex-col gap-8">
-      <header className="flex flex-col gap-3">
-        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">{exercise.name}</h1>
-        <div className="flex flex-wrap gap-2">
-          <Pill accent>{MUSCLE_LABELS[exercise.primaryMuscle]}</Pill>
-          <Pill>{EQUIPMENT_LABELS[exercise.equipment]}</Pill>
+      {/* Hero — image with a mandatory gradient overlay behind the headline. */}
+      <header className="relative overflow-hidden rounded-2xl border border-border-subtle">
+        <div className="relative aspect-[16/9] w-full sm:aspect-[21/9]">
+          <Image
+            src={exerciseImage(exercise.primaryMuscle)}
+            alt=""
+            fill
+            priority
+            sizes="(max-width: 1024px) 100vw, 960px"
+            className="object-cover"
+          />
+          <div
+            aria-hidden="true"
+            className="absolute inset-0 bg-gradient-to-t from-surface-base via-surface-base/60 to-surface-base/10"
+          />
+        </div>
+        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-3 p-6 sm:p-8">
+          <h1 className="text-3xl font-semibold tracking-tight text-text-primary sm:text-4xl">
+            {exercise.name}
+          </h1>
+          <div className="flex flex-wrap gap-2">
+            <Pill accent>{MUSCLE_LABELS[exercise.primaryMuscle]}</Pill>
+            <Pill>{EQUIPMENT_LABELS[exercise.equipment]}</Pill>
+          </div>
         </div>
       </header>
 
-      <Section title="Músculos trabalhados">
-        <div className="flex flex-wrap gap-2">
-          {exercise.muscles.map((m) => (
-            <Pill key={m} accent={m === exercise.primaryMuscle}>
-              {MUSCLE_LABELS[m]}
-            </Pill>
-          ))}
-        </div>
-      </Section>
+      {exercise.muscles.length > 0 ? (
+        <Section title="Músculos trabalhados">
+          <div className="flex flex-wrap gap-2">
+            {exercise.muscles.map((m) => (
+              <Pill key={m} accent={m === exercise.primaryMuscle}>
+                {MUSCLE_LABELS[m]}
+              </Pill>
+            ))}
+          </div>
+        </Section>
+      ) : null}
 
-      <Section title="Instruções">
-        <Card padding="lg">
-          <p className="whitespace-pre-line leading-relaxed text-text-secondary">
-            {exercise.instructions}
-          </p>
-        </Card>
-      </Section>
+      {exercise.instructions.trim().length > 0 ? (
+        <Section title="Como executar">
+          <Card padding="lg">
+            <p className="whitespace-pre-line leading-relaxed text-text-secondary">
+              {exercise.instructions}
+            </p>
+          </Card>
+        </Section>
+      ) : null}
 
       {exercise.tips.length > 0 ? (
         <Section title="Dicas">
@@ -110,11 +135,11 @@ function Loaded({ exercise }: { exercise: ExerciseView }) {
 function Loading() {
   return (
     <div className="flex flex-col gap-8">
+      <Skeleton className="aspect-[16/9] w-full rounded-2xl sm:aspect-[21/9]" />
       <div className="flex flex-col gap-3">
-        <Skeleton className="h-9 w-2/3" />
-        <Skeleton className="h-6 w-40" />
+        <Skeleton className="h-5 w-40" />
+        <Skeleton className="h-24 w-full rounded-xl" />
       </div>
-      <Skeleton className="h-24 w-full rounded-xl" />
       <Skeleton className="h-40 w-full rounded-xl" />
       <Skeleton className="h-32 w-full rounded-xl" />
     </div>

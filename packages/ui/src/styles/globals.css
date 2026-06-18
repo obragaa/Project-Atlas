@@ -23,24 +23,55 @@
   }
 }
 
-/* Living background aurora drifts — slow, organic, GPU-friendly (doc 04). */
-@keyframes atlas-aurora-a {
-  0%,
-  100% {
-    transform: translate3d(0, 0, 0) scale(1);
+/* Living background aurora — drifts a layered radial-gradient field by shifting
+ * background-position. No blur, no scale: the gradients are painted once and the
+ * window slides, so it composites cheaply and never janks (doc 04, 17). */
+@keyframes atlas-aurora-drift {
+  0% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      100% 100%,
+      0% 100%;
+  }
+  25% {
+    background-position:
+      40% 30%,
+      60% 20%,
+      70% 80%,
+      30% 70%;
   }
   50% {
-    transform: translate3d(6%, 8%, 0) scale(1.12);
+    background-position:
+      100% 100%,
+      0% 100%,
+      0% 0%,
+      100% 0%;
+  }
+  75% {
+    background-position:
+      60% 70%,
+      40% 80%,
+      30% 20%,
+      70% 30%;
+  }
+  100% {
+    background-position:
+      0% 0%,
+      100% 0%,
+      100% 100%,
+      0% 100%;
   }
 }
 
-@keyframes atlas-aurora-b {
+/* A soft pulse for accents (CTA glow, badges). */
+@keyframes atlas-pulse-glow {
   0%,
   100% {
-    transform: translate3d(0, 0, 0) scale(1.05);
+    opacity: 0.55;
   }
   50% {
-    transform: translate3d(-7%, -6%, 0) scale(0.95);
+    opacity: 1;
   }
 }
 

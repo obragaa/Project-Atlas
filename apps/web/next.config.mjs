@@ -7,6 +7,14 @@ const nextConfig = {
   experimental: {
     optimizePackageImports: ["@atlas/ui"],
   },
+  // Curated fitness imagery is served from Unsplash's CDN (blueprint/01 brand:
+  // premium, energetic). next/image optimizes and lazy-loads them.
+  images: {
+    remotePatterns: [
+      { protocol: "https", hostname: "images.unsplash.com" },
+      { protocol: "https", hostname: "plus.unsplash.com" },
+    ],
+  },
   // Security headers (blueprint/16 - Security.md "Security Headers"). CSP is
   // intentionally conservative; it tightens as integrations are added.
   async headers() {

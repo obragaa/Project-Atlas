@@ -151,7 +151,19 @@ function WorkoutCard({
 }) {
   const { id, name, status, itemCount } = workout;
   return (
-    <Card padding="lg" className="flex h-full flex-col gap-4">
+    <Card padding="lg" className="relative flex h-full flex-col gap-4 overflow-hidden">
+      {/* Status accent rail. */}
+      <span
+        aria-hidden="true"
+        className={cn(
+          "absolute inset-y-0 left-0 w-1",
+          status === "completed"
+            ? "bg-success-solid"
+            : status === "active"
+              ? "bg-accent"
+              : "bg-border-strong",
+        )}
+      />
       <div className="flex items-start justify-between gap-3">
         <Link
           href={`/workouts/${id}`}

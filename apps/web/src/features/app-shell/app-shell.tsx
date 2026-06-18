@@ -47,7 +47,7 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="flex min-h-dvh">
-      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-raised/40 px-4 py-6 backdrop-blur md:flex">
+      <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col border-r border-border-subtle bg-surface-base px-4 py-6 md:flex">
         <Link href="/dashboard" className="mb-8 flex items-center gap-2 px-2">
           <span className="grid h-8 w-8 place-items-center rounded-lg bg-accent text-on-accent">
             <IconLogo />
