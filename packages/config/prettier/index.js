@@ -1,0 +1,14 @@
+/**
+ * Shared Prettier configuration for the Atlas monorepo.
+ *
+ * @type {import("prettier").Config}
+ */
+export default {
+  semi: true,
+  singleQuote: false,
+  trailingComma: "all",
+  printWidth: 100,
+  tabWidth: 2,
+  endOfLine: "lf",
+  arrowParens: "always",
+};
