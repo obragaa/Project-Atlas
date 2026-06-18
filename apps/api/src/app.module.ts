@@ -14,6 +14,7 @@ import { CacheModule } from "./infra/cache/cache.module.js";
 import { HealthModule } from "./modules/health/health.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { WorkoutsModule } from "./modules/workouts/workouts.module.js";
+import { ExercisesModule } from "./modules/exercises/exercises.module.js";
 import { type Request } from "express";
 
 /**
@@ -61,6 +62,7 @@ import { type Request } from "express";
     DatabaseModule.forRoot(),
     AuthModule,
     WorkoutsModule,
+    ExercisesModule,
     HealthModule,
   ],
 })

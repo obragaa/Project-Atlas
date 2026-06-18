@@ -29,4 +29,10 @@ export const API_ROUTES = {
     /** Duplicate a workout into a fresh draft. */
     duplication: (id: string) => `/v1/workouts/${id}/duplication`,
   },
+  exercises: {
+    /** Collection: GET lists/searches the catalogue (cursor-paginated). */
+    collection: "/v1/exercises",
+    /** Item: GET a single exercise by its stable slug. */
+    bySlug: (slug: string) => `/v1/exercises/${slug}`,
+  },
 } as const;

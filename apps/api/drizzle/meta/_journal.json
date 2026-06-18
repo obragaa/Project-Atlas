@@ -15,6 +15,13 @@
       "when": 1781812375012,
       "tag": "0001_last_red_shift",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1781814054414,
+      "tag": "0002_luxuriant_nebula",
+      "breakpoints": true
     }
   ]
 }

@@ -96,6 +96,10 @@ domains, so they come first (ADR-0003).
 | Workouts API: contract-first, RFC 7807, cursor pagination, ownership 404        | ✅ (flow-verified)  |
 | `WorkoutCompleted` event → audit channel                                        | ✅ (flow-verified)  |
 | Web: `/workouts` board (list/create/complete/duplicate/delete) via the contract | ✅ (build-verified) |
+| Exercises domain: curated catalogue (read-mostly, seeded), search + filters     | ✅ (unit-tested)    |
+| Exercises persistence: Drizzle table + migration `0002`, idempotent seed        | ✅ (PGlite integ.)  |
+| Exercises API: `GET /exercises` (search/filter/cursor), `GET /exercises/{slug}` | ✅ (flow-verified)  |
+| Web: `/exercises` catalogue (search + muscle/equipment filters, load-more)      | ✅ (build-verified) |
 
 The shared `@atlas/contracts` package now **builds to `dist`** (CJS + d.ts):
 once the API consumes a runtime _value_ from it (e.g. `LOAD_UNITS`), the package
@@ -133,6 +137,9 @@ builds it before its consumers.
   (suspicious-activity detection, doc 15) is deferred; sessions record a risk
   level but it is not yet computed.
 - **No backup / retention policy** wired for Postgres/Redis (docs 13, 20).
+- **Exercise favourites + Workout↔Exercise link deferred** (ADR-0004) — the
+  catalogue is read-only; per-user favourites (doc 07) and an additive
+  `WorkoutItem.exerciseId` are follow-ups, each backward-compatible (doc 14).
 
 ## Roadmap (derived from the Blueprint)
 
@@ -140,9 +147,10 @@ builds it before its consumers.
   adapters, migrations (doc 13), Redis-backed sessions + refresh-token
   rotation/revocation (doc 15), readiness probe checks dependencies, audit
   channel and domain-event dispatch.
-- **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003) as the
-  first domain module; next the Core dashboard (docs 03/07), Exercises, Progress,
-  and Missions/Gamification (doc 09) — then the Core aggregates them.
+- **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003) and
+  Exercises ✅ (ADR-0004) delivered; next Progress and Missions/Gamification
+  (doc 09), then the Core dashboard (docs 03/07) aggregates them. A future
+  additive change links `WorkoutItem` to a catalogue `Exercise` (doc 14).
 - **Phase 4 — Atlas AI:** the AI Gateway, Context/Prompt/Tool engines, prompt
   registry, guardrails, observability (docs 10/22).
 - **Phase 5 — Observability & delivery hardening:** OpenTelemetry traces/metrics

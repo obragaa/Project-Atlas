@@ -8,11 +8,12 @@ are superseded, never edited away. The Blueprint remains the source of truth and
 outranks any ADR; an ADR records _how_ we realize the Blueprint, never a
 deviation from it.
 
-| ID                                      | Title                 | Status   |
-| --------------------------------------- | --------------------- | -------- |
-| [0001](./0001-technology-stack.md)      | Technology Stack      | Accepted |
-| [0002](./0002-llm-provider-strategy.md) | LLM Provider Strategy | Accepted |
-| [0003](./0003-workouts-domain.md)       | Workouts Domain Model | Accepted |
+| ID                                      | Title                  | Status   |
+| --------------------------------------- | ---------------------- | -------- |
+| [0001](./0001-technology-stack.md)      | Technology Stack       | Accepted |
+| [0002](./0002-llm-provider-strategy.md) | LLM Provider Strategy  | Accepted |
+| [0003](./0003-workouts-domain.md)       | Workouts Domain Model  | Accepted |
+| [0004](./0004-exercises-domain.md)      | Exercises Domain Model | Accepted |
 
 ## Template
 

@@ -10,7 +10,8 @@
     { "name": "Health", "description": "Liveness and readiness probes" },
     { "name": "Auth", "description": "Identity, authentication, and sessions" },
     { "name": "Core", "description": "The user's personal command center" },
-    { "name": "Workouts", "description": "Create, organize, and complete workouts" }
+    { "name": "Workouts", "description": "Create, organize, and complete workouts" },
+    { "name": "Exercises", "description": "The curated exercise catalogue" }
   ],
   "security": [{ "bearerAuth": [] }],
   "paths": {
@@ -350,6 +351,99 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
+    },
+    "/v1/exercises": {
+      "get": {
+        "tags": ["Exercises"],
+        "summary": "List/search the exercise catalogue (cursor-paginated)",
+        "parameters": [
+          {
+            "name": "search",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" },
+            "description": "Case-insensitive name contains"
+          },
+          {
+            "name": "muscle",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "chest",
+                "back",
+                "shoulders",
+                "biceps",
+                "triceps",
+                "legs",
+                "glutes",
+                "core",
+                "fullBody"
+              ]
+            },
+            "description": "Matches the primary or any worked muscle"
+          },
+          {
+            "name": "equipment",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": ["barbell", "dumbbell", "machine", "bodyweight", "cable", "other"]
+            }
+          },
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of exercise summaries",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExercisePage" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
+    },
+    "/v1/exercises/{slug}": {
+      "parameters": [
+        {
+          "name": "slug",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string" }
+        }
+      ],
+      "get": {
+        "tags": ["Exercises"],
+        "summary": "Get a single exercise by slug",
+        "responses": {
+          "200": {
+            "description": "The exercise",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ExerciseView" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
     }
   },
   "components": {
@@ -673,6 +767,76 @@
             "type": "array",
             "items": { "$ref": "#/components/schemas/WorkoutItemInput" }
           }
+        }
+      },
+      "MuscleGroup": {
+        "type": "string",
+        "enum": [
+          "chest",
+          "back",
+          "shoulders",
+          "biceps",
+          "triceps",
+          "legs",
+          "glutes",
+          "core",
+          "fullBody"
+        ]
+      },
+      "Equipment": {
+        "type": "string",
+        "enum": ["barbell", "dumbbell", "machine", "bodyweight", "cable", "other"]
+      },
+      "ExerciseView": {
+        "type": "object",
+        "required": [
+          "id",
+          "slug",
+          "name",
+          "primaryMuscle",
+          "muscles",
+          "equipment",
+          "instructions",
+          "tips",
+          "variations"
+        ],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "primaryMuscle": { "$ref": "#/components/schemas/MuscleGroup" },
+          "muscles": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MuscleGroup" }
+          },
+          "equipment": { "$ref": "#/components/schemas/Equipment" },
+          "instructions": { "type": "string" },
+          "tips": { "type": "array", "items": { "type": "string" } },
+          "variations": { "type": "array", "items": { "type": "string" } }
+        }
+      },
+      "ExerciseSummaryView": {
+        "type": "object",
+        "required": ["id", "slug", "name", "primaryMuscle", "equipment"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "slug": { "type": "string" },
+          "name": { "type": "string" },
+          "primaryMuscle": { "$ref": "#/components/schemas/MuscleGroup" },
+          "equipment": { "$ref": "#/components/schemas/Equipment" }
+        }
+      },
+      "ExercisePage": {
+        "type": "object",
+        "required": ["items", "nextCursor", "previousCursor", "hasNext"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/ExerciseSummaryView" }
+          },
+          "nextCursor": { "type": ["string", "null"] },
+          "previousCursor": { "type": ["string", "null"] },
+          "hasNext": { "type": "boolean" }
         }
       }
     }
