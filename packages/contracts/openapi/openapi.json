@@ -45,10 +45,10 @@
             }
           },
           "503": {
-            "description": "Service not ready",
+            "description": "Service not ready (one or more critical dependencies down)",
             "content": {
-              "application/problem+json": {
-                "schema": { "$ref": "#/components/schemas/ProblemDetails" }
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/HealthReport" }
               }
             }
           }
@@ -230,7 +230,21 @@
         "properties": {
           "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
           "checkedAt": { "type": "string", "format": "date-time" },
-          "version": { "type": "string" }
+          "version": { "type": "string" },
+          "checks": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/HealthCheckReport" }
+          }
+        }
+      },
+      "HealthCheckReport": {
+        "type": "object",
+        "required": ["name", "status", "durationMs"],
+        "properties": {
+          "name": { "type": "string" },
+          "status": { "type": "string", "enum": ["ok", "degraded", "down"] },
+          "durationMs": { "type": "number" },
+          "detail": { "type": "string" }
         }
       },
       "ProblemDetails": {

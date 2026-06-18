@@ -48,6 +48,8 @@ export default [
       "**/infrastructure/**/*.ts",
       "**/shared/database/**/*.ts",
       "**/infra/**/*.ts",
+      // Health indicators are infrastructure adapters for concrete dependencies.
+      "**/health/indicators/**/*.ts",
       "**/testing/**/*.ts",
       "drizzle.config.ts",
     ],

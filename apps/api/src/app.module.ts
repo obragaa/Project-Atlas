@@ -8,6 +8,8 @@ import {
   getCorrelationId,
 } from "./shared/http/correlation-id.middleware.js";
 import { DatabaseModule } from "./shared/database/database.module.js";
+import { InfraModule } from "./infra/infra.module.js";
+import { CacheModule } from "./infra/cache/cache.module.js";
 import { HealthModule } from "./modules/health/health.module.js";
 import { AuthModule } from "./modules/auth/auth.module.js";
 import { type Request } from "express";
@@ -44,6 +46,8 @@ import { type Request } from "express";
         autoLogging: true,
       },
     }),
+    InfraModule,
+    CacheModule,
     DatabaseModule.forRoot(),
     AuthModule,
     HealthModule,
