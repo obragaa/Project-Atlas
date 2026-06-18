@@ -1,0 +1,18 @@
+/* Atlas design tokens + base element styles (the single source of truth).
+ * @import rules must precede other at-rules, so tokens/base load first. */
+@import "@atlas/ui/tokens.css";
+@import "@atlas/ui/styles.css";
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * App-level helpers layered on top of the design system. Visual values come
+ * from tokens, never hardcoded here (blueprint/05).
+ */
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}

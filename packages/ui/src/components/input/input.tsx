@@ -1,5 +1,5 @@
 import { type InputHTMLAttributes, forwardRef, useId } from "react";
-import { cn } from "../../utils/cn.js";
+import { cn } from "../../utils/cn";
 
 export interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
   /** Visible label. Required — placeholders are never the sole label (doc 06). */

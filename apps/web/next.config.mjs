@@ -1,0 +1,30 @@
+/** @type {import("next").NextConfig} */
+const nextConfig = {
+  reactStrictMode: true,
+  poweredByHeader: false,
+  // Transpile the workspace design system (ships as TS source).
+  transpilePackages: ["@atlas/ui", "@atlas/contracts"],
+  experimental: {
+    optimizePackageImports: ["@atlas/ui"],
+  },
+  // Security headers (blueprint/16 - Security.md "Security Headers"). CSP is
+  // intentionally conservative; it tightens as integrations are added.
+  async headers() {
+    return [
+      {
+        source: "/:path*",
+        headers: [
+          { key: "X-Content-Type-Options", value: "nosniff" },
+          { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
+          { key: "X-Frame-Options", value: "DENY" },
+          {
+            key: "Permissions-Policy",
+            value: "camera=(), microphone=(), geolocation=()",
+          },
+        ],
+      },
+    ];
+  },
+};
+
+export default nextConfig;

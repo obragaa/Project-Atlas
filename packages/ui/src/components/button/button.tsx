@@ -1,7 +1,7 @@
-import { type ButtonHTMLAttributes, forwardRef } from "react";
+﻿import { type ButtonHTMLAttributes, forwardRef } from "react";
 import { type VariantProps, cva } from "class-variance-authority";
-import { cn } from "../../utils/cn.js";
-import { Spinner } from "../spinner/spinner.js";
+import { cn } from "../../utils/cn";
+import { Spinner } from "../spinner/spinner";
 
 /**
  * Button — the primary action primitive.

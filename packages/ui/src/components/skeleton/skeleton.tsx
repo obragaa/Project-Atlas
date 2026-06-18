@@ -1,5 +1,5 @@
 import { type HTMLAttributes, forwardRef } from "react";
-import { cn } from "../../utils/cn.js";
+import { cn } from "../../utils/cn";
 
 export interface SkeletonProps extends HTMLAttributes<HTMLDivElement> {
   /** Renders a circular skeleton (e.g. for avatars). */

@@ -1,5 +1,5 @@
 import { type HTMLAttributes, forwardRef } from "react";
-import { cn } from "../../utils/cn.js";
+import { cn } from "../../utils/cn";
 
 export interface SpinnerProps extends HTMLAttributes<HTMLSpanElement> {
   /** Visual size of the spinner. */

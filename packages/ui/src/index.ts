@@ -7,24 +7,24 @@
  */
 
 // Utilities
-export { cn } from "./utils/cn.js";
+export { cn } from "./utils/cn";
 
 // Hooks
-export { usePrefersReducedMotion } from "./hooks/use-prefers-reduced-motion.js";
+export { usePrefersReducedMotion } from "./hooks/use-prefers-reduced-motion";
 
 // Tokens
-export * as tokens from "./tokens/index.js";
+export * as tokens from "./tokens/index";
 
 // Components
-export { Button, buttonVariants, type ButtonProps } from "./components/button/button.js";
-export { Spinner, type SpinnerProps } from "./components/spinner/spinner.js";
-export { Skeleton, type SkeletonProps } from "./components/skeleton/skeleton.js";
-export { Input, type InputProps } from "./components/input/input.js";
+export { Button, buttonVariants, type ButtonProps } from "./components/button/button";
+export { Spinner, type SpinnerProps } from "./components/spinner/spinner";
+export { Skeleton, type SkeletonProps } from "./components/skeleton/skeleton";
+export { Input, type InputProps } from "./components/input/input";
 export {
   Card,
   CardHeader,
   CardTitle,
   CardDescription,
   type CardProps,
-} from "./components/card/card.js";
-export { VisuallyHidden } from "./components/visually-hidden/visually-hidden.js";
+} from "./components/card/card";
+export { VisuallyHidden } from "./components/visually-hidden/visually-hidden";

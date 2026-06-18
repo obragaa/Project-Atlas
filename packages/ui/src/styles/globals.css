@@ -1,9 +1,10 @@
 /**
- * Atlas global styles. Imported once at the app root, after Tailwind's base.
- * Defines design-system keyframes and base element defaults.
+ * Atlas design-system base styles and keyframes.
+ *
+ * This file is framework-agnostic plain CSS (no Tailwind `@layer` directives),
+ * so it can be imported from any app without requiring Tailwind's processing
+ * context. Tokens come from `tokens.css`; apps import that separately first.
  */
-
-@import "../tokens/tokens.css";
 
 @keyframes atlas-shimmer {
   100% {
@@ -22,45 +23,65 @@
   }
 }
 
-@layer base {
-  :root {
-    color-scheme: dark;
+/* Living background aurora drifts — slow, organic, GPU-friendly (doc 04). */
+@keyframes atlas-aurora-a {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
   }
-  [data-theme="light"] {
-    color-scheme: light;
+  50% {
+    transform: translate3d(6%, 8%, 0) scale(1.12);
   }
+}
 
-  html {
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
+@keyframes atlas-aurora-b {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1.05);
   }
-
-  body {
-    background-color: var(--atlas-surface-canvas);
-    color: var(--atlas-text-primary);
-    font-family:
-      "Inter",
-      system-ui,
-      -apple-system,
-      "Segoe UI",
-      Roboto,
-      sans-serif;
+  50% {
+    transform: translate3d(-7%, -6%, 0) scale(0.95);
   }
+}
 
-  /* Elegant, consistent focus across the system (doc 04 / doc 06). */
-  :focus-visible {
-    outline: none;
-  }
+:root {
+  color-scheme: dark;
+}
 
-  /* Respect reduced-motion globally as a safety net (doc 04 / doc 06). */
-  @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
-      scroll-behavior: auto !important;
-    }
+[data-theme="light"] {
+  color-scheme: light;
+}
+
+html {
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+body {
+  background-color: var(--atlas-surface-canvas);
+  color: var(--atlas-text-primary);
+  font-family:
+    "Inter",
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    sans-serif;
+}
+
+/* Elegant, consistent focus across the system (doc 04 / doc 06). */
+:focus-visible {
+  outline: none;
+}
+
+/* Respect reduced-motion globally as a safety net (doc 04 / doc 06). */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
   }
 }

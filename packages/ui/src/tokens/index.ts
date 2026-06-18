@@ -1,9 +1,9 @@
-/**
+﻿/**
  * Public token surface. Import semantic tokens for component authoring; import
  * primitives only for advanced composition (e.g. data visualization).
  */
-export * as primitives from "./primitives.js";
-export { color, type SemanticColors } from "./semantic.js";
+export * as primitives from "./primitives";
+export { color, type SemanticColors } from "./semantic";
 export {
   spacing,
   radius,
@@ -13,4 +13,4 @@ export {
   zIndex,
   opacity,
   palette,
-} from "./primitives.js";
+} from "./primitives";

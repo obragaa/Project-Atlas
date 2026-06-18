@@ -1,6 +1,6 @@
-import { type HTMLAttributes, forwardRef } from "react";
+﻿import { type HTMLAttributes, forwardRef } from "react";
 import { type VariantProps, cva } from "class-variance-authority";
-import { cn } from "../../utils/cn.js";
+import { cn } from "../../utils/cn";
 
 /**
  * Card — a light, breathable block of information (blueprint/05: cards must feel
