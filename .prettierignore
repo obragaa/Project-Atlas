@@ -6,3 +6,6 @@ build/
 coverage/
 pnpm-lock.yaml
 *.tsbuildinfo
+
+# The Blueprint is the source-of-truth contract — never reformat it.
+blueprint/

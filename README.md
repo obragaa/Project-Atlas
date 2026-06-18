@@ -28,16 +28,16 @@ blueprint/    The architectural source of truth (read-only contract)
 
 ## Architecture at a glance
 
-| Concern | Decision | Blueprint |
-|---|---|---|
-| Stack | pnpm + turborepo monorepo, TS end-to-end | ADR-0001 |
-| Backend | Layered DDD by domain module, domain framework-agnostic | doc 12 |
-| Data | PostgreSQL, domain-owned, aggregate roots, cursor pagination | doc 13 |
-| API | Contract-first (OpenAPI), REST, RFC 7807 errors | doc 14 |
-| Auth | Opaque identity, access + rotating refresh tokens, RBAC + policy | doc 15 |
-| AI | Provider-agnostic gateway, context-first, tools before hallucination | docs 10, 22 |
+| Concern  | Decision                                                             | Blueprint      |
+| -------- | -------------------------------------------------------------------- | -------------- |
+| Stack    | pnpm + turborepo monorepo, TS end-to-end                             | ADR-0001       |
+| Backend  | Layered DDD by domain module, domain framework-agnostic              | doc 12         |
+| Data     | PostgreSQL, domain-owned, aggregate roots, cursor pagination         | doc 13         |
+| API      | Contract-first (OpenAPI), REST, RFC 7807 errors                      | doc 14         |
+| Auth     | Opaque identity, access + rotating refresh tokens, RBAC + policy     | doc 15         |
+| AI       | Provider-agnostic gateway, context-first, tools before hallucination | docs 10, 22    |
 | Frontend | Token-driven, accessible-by-default, motion as a first-class concern | docs 04–06, 11 |
-| Quality | Testing pyramid, security & performance gates, observability | docs 16–21 |
+| Quality  | Testing pyramid, security & performance gates, observability         | docs 16–21     |
 
 ## Getting started
 

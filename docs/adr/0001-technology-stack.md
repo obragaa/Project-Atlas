@@ -11,7 +11,7 @@
 ## Context
 
 The Atlas Blueprint is intentionally technology-agnostic (see the "Não Escopo"
-sections of docs 12, 13, 14, 18 and the *Provider Independence* principle in
+sections of docs 12, 13, 14, 18 and the _Provider Independence_ principle in
 doc 22). It defines **architecture and principles**, not tools. Before any
 implementation, a foundational stack must be chosen and recorded, because every
 downstream decision depends on it.

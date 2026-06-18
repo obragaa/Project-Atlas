@@ -24,8 +24,8 @@ domain or application layers.
 
 ## Alternatives considered
 
-1. **Anthropic (Claude) as default.** The Blueprint references *Anthropic
-   Constitutional AI* and the *Anthropic Prompt Engineering Guide* in doc 22,
+1. **Anthropic (Claude) as default.** The Blueprint references _Anthropic
+   Constitutional AI_ and the _Anthropic Prompt Engineering Guide_ in doc 22,
    and lists Anthropic among the quality bar (doc 00 §13). Strong tool-calling
    and long-context support fit the Context-Engineering-first design.
 2. **OpenAI as default.** Equally viable behind the abstraction.

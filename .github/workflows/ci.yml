@@ -1,0 +1,62 @@
+name: CI
+
+# Continuous Integration is mandatory (blueprint/19 - DevOps.md, ADR-003).
+# No code is integrated without passing every gate below.
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  quality:
+    name: Quality Gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9.15.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Format check
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Typecheck
+        run: pnpm typecheck
+
+      - name: Test
+        # Quality gate: tests must pass (blueprint/18 - Testing.md).
+        run: pnpm test
+
+      - name: Build
+        # Build must be reproducible and green (blueprint/19 - DevOps.md).
+        run: pnpm build
+        env:
+          # Build-time secrets are placeholders in CI; real values come from the
+          # environment at deploy time (blueprint/16, 19).
+          AUTH_ACCESS_TOKEN_SECRET: ci-access-secret-placeholder-0123456789
+          AUTH_REFRESH_TOKEN_SECRET: ci-refresh-secret-placeholder-0123456789
