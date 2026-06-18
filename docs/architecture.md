@@ -100,6 +100,11 @@ domains, so they come first (ADR-0003).
 | Exercises persistence: Drizzle table + migration `0002`, idempotent seed        | ✅ (PGlite integ.)  |
 | Exercises API: `GET /exercises` (search/filter/cursor), `GET /exercises/{slug}` | ✅ (flow-verified)  |
 | Web: `/exercises` catalogue (search + muscle/equipment filters, load-more)      | ✅ (build-verified) |
+| Progress domain: per-user measurement series (weight + body), derived records   | ✅ (unit-tested)    |
+| Progress persistence: Drizzle table + migration `0003`, UPSERT per (user, date) | ✅ (PGlite integ.)  |
+| Progress API: record/list/delete measurements + derived summary & chart series  | ✅ (flow-verified)  |
+| Web: full app — persistent session, sidebar nav, dashboard, and a `/progress`   | ✅ (build-verified) |
+| screen (records, weight chart, log, history); premium imagery throughout        |                     |
 
 The shared `@atlas/contracts` package now **builds to `dist`** (CJS + d.ts):
 once the API consumes a runtime _value_ from it (e.g. `LOAD_UNITS`), the package
@@ -147,10 +152,12 @@ builds it before its consumers.
   adapters, migrations (doc 13), Redis-backed sessions + refresh-token
   rotation/revocation (doc 15), readiness probe checks dependencies, audit
   channel and domain-event dispatch.
-- **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003) and
-  Exercises ✅ (ADR-0004) delivered; next Progress and Missions/Gamification
-  (doc 09), then the Core dashboard (docs 03/07) aggregates them. A future
-  additive change links `WorkoutItem` to a catalogue `Exercise` (doc 14).
+- **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003),
+  Exercises ✅ (ADR-0004), and Progress ✅ (ADR-0005) delivered, plus a real
+  navigable web app (persistent session, sidebar, dashboard, premium imagery).
+  Next: Missions/Gamification (doc 09), then the Core dashboard (docs 03/07)
+  fully aggregates them. A future additive change links `WorkoutItem` to a
+  catalogue `Exercise` (doc 14).
 - **Phase 4 — Atlas AI:** the AI Gateway, Context/Prompt/Tool engines, prompt
   registry, guardrails, observability (docs 10/22).
 - **Phase 5 — Observability & delivery hardening:** OpenTelemetry traces/metrics

@@ -11,7 +11,8 @@
     { "name": "Auth", "description": "Identity, authentication, and sessions" },
     { "name": "Core", "description": "The user's personal command center" },
     { "name": "Workouts", "description": "Create, organize, and complete workouts" },
-    { "name": "Exercises", "description": "The curated exercise catalogue" }
+    { "name": "Exercises", "description": "The curated exercise catalogue" },
+    { "name": "Progress", "description": "Body measurements, history, and personal records" }
   ],
   "security": [{ "bearerAuth": [] }],
   "paths": {
@@ -444,6 +445,97 @@
           "404": { "$ref": "#/components/responses/NotFound" }
         }
       }
+    },
+    "/v1/progress/measurements": {
+      "get": {
+        "tags": ["Progress"],
+        "summary": "List the user's measurement history (cursor-paginated)",
+        "parameters": [
+          {
+            "name": "cursor",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "string" }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "required": false,
+            "schema": { "type": "integer", "minimum": 1, "maximum": 100 }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "A page of measurements (newest first)",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MeasurementPage" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      },
+      "post": {
+        "tags": ["Progress"],
+        "summary": "Record (or replace) a measurement for a date",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/RecordMeasurementRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "The recorded measurement",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/MeasurementView" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
+    },
+    "/v1/progress/measurements/{id}": {
+      "parameters": [
+        {
+          "name": "id",
+          "in": "path",
+          "required": true,
+          "schema": { "type": "string", "format": "uuid" }
+        }
+      ],
+      "delete": {
+        "tags": ["Progress"],
+        "summary": "Delete a measurement",
+        "responses": {
+          "204": { "description": "Measurement deleted" },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "404": { "$ref": "#/components/responses/NotFound" }
+        }
+      }
+    },
+    "/v1/progress/summary": {
+      "get": {
+        "tags": ["Progress"],
+        "summary": "Derived records, stats, and the weight chart series",
+        "responses": {
+          "200": {
+            "description": "Progress summary",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/ProgressSummary" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" }
+        }
+      }
     }
   },
   "components": {
@@ -837,6 +929,81 @@
           "nextCursor": { "type": ["string", "null"] },
           "previousCursor": { "type": ["string", "null"] },
           "hasNext": { "type": "boolean" }
+        }
+      },
+      "BodyMeasurements": {
+        "type": "object",
+        "properties": {
+          "waist": { "type": ["number", "null"] },
+          "chest": { "type": ["number", "null"] },
+          "hips": { "type": ["number", "null"] },
+          "arm": { "type": ["number", "null"] },
+          "thigh": { "type": ["number", "null"] },
+          "calf": { "type": ["number", "null"] }
+        }
+      },
+      "MeasurementView": {
+        "type": "object",
+        "required": ["id", "recordedOn", "weightKg", "measurements", "note", "createdAt"],
+        "properties": {
+          "id": { "type": "string", "format": "uuid" },
+          "recordedOn": { "type": "string", "format": "date" },
+          "weightKg": { "type": ["number", "null"] },
+          "measurements": { "$ref": "#/components/schemas/BodyMeasurements" },
+          "note": { "type": ["string", "null"] },
+          "createdAt": { "type": "string", "format": "date-time" }
+        }
+      },
+      "MeasurementPage": {
+        "type": "object",
+        "required": ["items", "nextCursor", "previousCursor", "hasNext"],
+        "properties": {
+          "items": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/MeasurementView" }
+          },
+          "nextCursor": { "type": ["string", "null"] },
+          "previousCursor": { "type": ["string", "null"] },
+          "hasNext": { "type": "boolean" }
+        }
+      },
+      "RecordMeasurementRequest": {
+        "type": "object",
+        "properties": {
+          "recordedOn": { "type": "string", "format": "date" },
+          "weightKg": { "type": ["number", "null"] },
+          "measurements": { "$ref": "#/components/schemas/BodyMeasurements" },
+          "note": { "type": ["string", "null"], "maxLength": 280 }
+        }
+      },
+      "WeightPoint": {
+        "type": "object",
+        "required": ["recordedOn", "weightKg"],
+        "properties": {
+          "recordedOn": { "type": "string", "format": "date" },
+          "weightKg": { "type": "number" }
+        }
+      },
+      "ProgressSummary": {
+        "type": "object",
+        "required": [
+          "entryCount",
+          "latestWeightKg",
+          "lowestWeightKg",
+          "highestWeightKg",
+          "totalChangeKg",
+          "weightSeries"
+        ],
+        "properties": {
+          "entryCount": { "type": "integer" },
+          "latestWeightKg": { "type": ["number", "null"] },
+          "lowestWeightKg": { "type": ["number", "null"] },
+          "highestWeightKg": { "type": ["number", "null"] },
+          "totalChangeKg": { "type": ["number", "null"] },
+          "weightSeries": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/WeightPoint" }
+          }
         }
       }
     }

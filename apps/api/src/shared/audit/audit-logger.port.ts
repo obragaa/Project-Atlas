@@ -21,7 +21,8 @@ export type AuditAction =
   | "auth.token_refreshed"
   | "auth.logout"
   | "auth.session_revoked"
-  | "workout.completed";
+  | "workout.completed"
+  | "progress.measurement_recorded";
 
 export type AuditOutcome = "success" | "failure";
 

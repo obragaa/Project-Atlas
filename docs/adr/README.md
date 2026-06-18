@@ -14,6 +14,7 @@ deviation from it.
 | [0002](./0002-llm-provider-strategy.md) | LLM Provider Strategy  | Accepted |
 | [0003](./0003-workouts-domain.md)       | Workouts Domain Model  | Accepted |
 | [0004](./0004-exercises-domain.md)      | Exercises Domain Model | Accepted |
+| [0005](./0005-progress-domain.md)       | Progress Domain Model  | Accepted |
 
 ## Template
 

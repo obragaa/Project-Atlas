@@ -5,6 +5,7 @@ import { AUDIT_LOGGER, type AuditLogger } from "./audit/audit-logger.port.js";
 import { PinoAuditLogger } from "./audit/pino-audit-logger.js";
 import { UserRegistered } from "../modules/auth/domain/events.js";
 import { WorkoutCompleted } from "../modules/workouts/domain/events.js";
+import { MeasurementRecorded } from "../modules/progress/domain/events.js";
 
 /**
  * Shared kernel infrastructure (blueprint/12). Owns the cross-cutting, framework-
@@ -47,6 +48,15 @@ export class SharedKernelModule implements OnModuleInit {
     this.dispatcher.on<WorkoutCompleted>(WorkoutCompleted.name, (event) => {
       this.audit.record({
         action: "workout.completed",
+        outcome: "success",
+        userId: event.userId,
+      });
+    });
+
+    // Recording a measurement is an auditable progress fact (blueprint/13).
+    this.dispatcher.on<MeasurementRecorded>(MeasurementRecorded.name, (event) => {
+      this.audit.record({
+        action: "progress.measurement_recorded",
         outcome: "success",
         userId: event.userId,
       });

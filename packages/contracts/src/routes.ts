@@ -35,4 +35,12 @@ export const API_ROUTES = {
     /** Item: GET a single exercise by its stable slug. */
     bySlug: (slug: string) => `/v1/exercises/${slug}`,
   },
+  progress: {
+    /** Collection: POST records a measurement, GET lists history (cursor). */
+    measurements: "/v1/progress/measurements",
+    /** Item: DELETE a measurement by id. */
+    measurementById: (id: string) => `/v1/progress/measurements/${id}`,
+    /** Derived records, stats, and the weight chart series. */
+    summary: "/v1/progress/summary",
+  },
 } as const;

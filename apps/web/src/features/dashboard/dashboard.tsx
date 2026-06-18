@@ -161,6 +161,13 @@ export function Dashboard() {
             image={MUSCLE_IMAGES.chest}
             icon={LibraryIcon}
           />
+          <QuickAction
+            href="/progress"
+            title="Meu progresso"
+            description="Registre peso e medidas e veja sua evolução."
+            image={MUSCLE_IMAGES.core}
+            icon={TrendingIcon}
+          />
         </div>
       </section>
     </div>
@@ -344,6 +351,24 @@ function LibraryIcon(props: SVGProps<SVGSVGElement>) {
       <path d="m12.5 4.5 3.5-.8 3 14.6-3.5.8z" />
       <path d="M8 19H4" />
       <path d="M8 5H4" />
+    </svg>
+  );
+}
+
+function TrendingIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={1.75}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M3 17l6-6 4 4 8-8" />
+      <path d="M17 7h4v4" />
     </svg>
   );
 }

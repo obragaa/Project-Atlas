@@ -22,6 +22,13 @@
       "when": 1781814054414,
       "tag": "0002_luxuriant_nebula",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1781820575612,
+      "tag": "0003_watery_rafael_vega",
+      "breakpoints": true
     }
   ]
 }
