@@ -1,21 +1,24 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Input } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
 import { authService } from "@/services/auth.service";
+import { useAuth } from "@/features/auth/auth-context";
 
 /**
- * Login form. Mirrors the register experience and surfaces a single, user-safe
- * message on failure — the API never reveals whether the email exists
- * (blueprint/16 information disclosure; mirrored here).
+ * Login form. On success it stores the session (via the auth context) and sends
+ * the user to their dashboard. A single, user-safe message on failure — the API
+ * never reveals whether the email exists (blueprint/16, mirrored here).
  */
 export function LoginForm() {
+  const router = useRouter();
+  const { signIn } = useAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   async function onSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -23,25 +26,17 @@ export function LoginForm() {
     setIsSubmitting(true);
 
     try {
-      await authService.login({ email, password });
-      setDone(true);
+      const session = await authService.login({ email, password });
+      signIn(session);
+      router.replace("/dashboard");
     } catch (error) {
       setFormError(
         error instanceof ApiError
           ? error.problem.detail
           : "Não foi possível entrar agora. Tente novamente.",
       );
-    } finally {
       setIsSubmitting(false);
     }
-  }
-
-  if (done) {
-    return (
-      <p role="status" className="text-text-secondary">
-        Tudo certo. Redirecionando você para o seu Core…
-      </p>
-    );
   }
 
   return (

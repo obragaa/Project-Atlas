@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Card, CardDescription, CardHeader, CardTitle } from "@atlas/ui";
+import { RedirectIfAuthenticated } from "@/features/auth/redirect-if-authenticated";
 
 interface AuthShellProps {
   title: string;
@@ -15,6 +16,7 @@ interface AuthShellProps {
 export function AuthShell({ title, description, children, footer }: AuthShellProps) {
   return (
     <main className="mx-auto flex min-h-dvh max-w-md flex-col justify-center px-6 py-12">
+      <RedirectIfAuthenticated />
       <Link
         href="/"
         className="mb-8 inline-flex items-center gap-2 self-start text-sm text-text-tertiary transition-colors hover:text-text-secondary"

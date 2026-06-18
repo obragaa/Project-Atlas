@@ -1,6 +1,7 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useEffect, useState } from "react";
+import Link from "next/link";
 import {
   type Equipment,
   EQUIPMENT,
@@ -8,22 +9,17 @@ import {
   type MuscleGroup,
   MUSCLE_GROUPS,
 } from "@atlas/contracts";
-import { Button, Card, Input, Skeleton } from "@atlas/ui";
+import { Button, Card, Input, Skeleton, cn } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
-import { SessionGate } from "@/features/auth/session-gate";
 import { exercisesService } from "@/services/exercises.service";
 import { EQUIPMENT_LABELS, MUSCLE_LABELS } from "./labels";
 
-/** Catalogue screen (blueprint/07 "Exercícios"): search + filters over the API. */
+/**
+ * Catalogue screen (blueprint/07 "Exercícios"): a searchable, filterable view of
+ * the curated library. Auth is guaranteed by the app shell, so the service is
+ * called directly — the api-client attaches the token automatically.
+ */
 export function ExercisesCatalogue() {
-  return (
-    <SessionGate title="Biblioteca de exercícios" description="Entre para explorar o catálogo.">
-      {(accessToken, signOut) => <Catalogue accessToken={accessToken} onSignOut={signOut} />}
-    </SessionGate>
-  );
-}
-
-function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut: () => void }) {
   const [search, setSearch] = useState("");
   const [muscle, setMuscle] = useState<MuscleGroup | "">("");
   const [equipment, setEquipment] = useState<Equipment | "">("");
@@ -33,25 +29,15 @@ function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut:
   const [error, setError] = useState<string | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
 
-  const handle = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && err.problem.status === 401) {
-        onSignOut();
-        return;
-      }
-      setError(err instanceof ApiError ? err.problem.detail : "Algo deu errado. Tente novamente.");
-    },
-    [onSignOut],
-  );
-
   // Re-query whenever a filter changes (debounced for the free-text search).
   useEffect(() => {
     const controller = new AbortController();
     const run = async () => {
       setError(null);
       setItems(null);
+      setNextCursor(null);
       try {
-        const page = await exercisesService.list(accessToken, {
+        const page = await exercisesService.list({
           search: search.trim() || undefined,
           muscle: muscle || undefined,
           equipment: equipment || undefined,
@@ -61,7 +47,9 @@ function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut:
           setNextCursor(page.nextCursor);
         }
       } catch (err) {
-        if (!controller.signal.aborted) handle(err);
+        if (!controller.signal.aborted) {
+          setError(toMessage(err));
+        }
       }
     };
     const timer = setTimeout(() => void run(), 250);
@@ -69,13 +57,14 @@ function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut:
       controller.abort();
       clearTimeout(timer);
     };
-  }, [accessToken, search, muscle, equipment, handle]);
+  }, [search, muscle, equipment]);
 
   async function loadMore() {
     if (!nextCursor) return;
     setLoadingMore(true);
+    setError(null);
     try {
-      const page = await exercisesService.list(accessToken, {
+      const page = await exercisesService.list({
         search: search.trim() || undefined,
         muscle: muscle || undefined,
         equipment: equipment || undefined,
@@ -84,44 +73,59 @@ function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut:
       setItems((prev) => [...(prev ?? []), ...page.items]);
       setNextCursor(page.nextCursor);
     } catch (err) {
-      handle(err);
+      setError(toMessage(err));
     } finally {
       setLoadingMore(false);
     }
   }
 
   return (
-    <div className="mx-auto flex max-w-3xl flex-col gap-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">Exercícios</h1>
-          <p className="text-sm text-text-secondary">Pesquise e filtre a biblioteca.</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onSignOut}>
-          Sair
-        </Button>
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Exercícios</h1>
+        <p className="text-text-secondary">
+          Explore a biblioteca: busque pelo nome ou filtre por músculo e equipamento.
+        </p>
       </header>
 
-      <Card padding="md" className="flex flex-col gap-4">
+      <Card padding="lg" className="flex flex-col gap-6">
         <Input
           label="Buscar"
           placeholder="Ex.: supino, agachamento…"
           value={search}
           onChange={(e) => setSearch(e.target.value)}
         />
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          <Select
-            label="Grupo muscular"
-            value={muscle}
-            onChange={(v) => setMuscle(v as MuscleGroup | "")}
-            options={MUSCLE_GROUPS.map((m) => ({ value: m, label: MUSCLE_LABELS[m] }))}
-          />
-          <Select
-            label="Equipamento"
-            value={equipment}
-            onChange={(v) => setEquipment(v as Equipment | "")}
-            options={EQUIPMENT.map((e) => ({ value: e, label: EQUIPMENT_LABELS[e] }))}
-          />
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+            Grupo muscular
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {MUSCLE_GROUPS.map((m) => (
+              <Chip
+                key={m}
+                label={MUSCLE_LABELS[m]}
+                active={muscle === m}
+                onClick={() => setMuscle((prev) => (prev === m ? "" : m))}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-3">
+          <p className="text-xs font-semibold uppercase tracking-wide text-text-tertiary">
+            Equipamento
+          </p>
+          <div className="flex flex-wrap gap-2">
+            {EQUIPMENT.map((eq) => (
+              <Chip
+                key={eq}
+                label={EQUIPMENT_LABELS[eq]}
+                active={equipment === eq}
+                onClick={() => setEquipment((prev) => (prev === eq ? "" : eq))}
+              />
+            ))}
+          </div>
         </div>
       </Card>
 
@@ -135,80 +139,98 @@ function Catalogue({ accessToken, onSignOut }: { accessToken: string; onSignOut:
       ) : null}
 
       {items === null ? (
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
-          <Skeleton className="h-16 w-full" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Skeleton key={i} className="h-28 w-full rounded-xl" />
+          ))}
         </div>
       ) : items.length === 0 ? (
-        <Card padding="lg">
+        <Card padding="lg" className="flex flex-col items-start gap-1">
+          <p className="font-medium text-text-primary">Nenhum exercício encontrado</p>
           <p className="text-sm text-text-secondary">
-            Nenhum exercício encontrado com esses filtros.
+            Tente ajustar a busca ou remover alguns filtros.
           </p>
         </Card>
       ) : (
-        <>
-          <ul className="flex flex-col gap-3">
+        <div className="flex flex-col gap-6">
+          <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {items.map((ex) => (
               <li key={ex.id}>
-                <Card padding="md" className="flex items-center justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-text-primary">{ex.name}</p>
-                    <p className="text-xs text-text-tertiary">
-                      {MUSCLE_LABELS[ex.primaryMuscle]} · {EQUIPMENT_LABELS[ex.equipment]}
-                    </p>
-                  </div>
-                </Card>
+                <ExerciseCard exercise={ex} />
               </li>
             ))}
           </ul>
           {nextCursor ? (
-            <Button
-              variant="secondary"
-              onClick={() => void loadMore()}
-              isLoading={loadingMore}
-              loadingText="Carregando"
-            >
-              Carregar mais
-            </Button>
+            <div className="flex justify-center">
+              <Button
+                variant="secondary"
+                onClick={() => void loadMore()}
+                isLoading={loadingMore}
+                loadingText="Carregando"
+              >
+                Carregar mais
+              </Button>
+            </div>
           ) : null}
-        </>
+        </div>
       )}
     </div>
   );
 }
 
-interface SelectOption {
-  value: string;
-  label: string;
+function ExerciseCard({ exercise }: { exercise: ExerciseSummaryView }) {
+  return (
+    <Link href={`/exercises/${exercise.slug}`} className="block h-full">
+      <Card interactive padding="md" className="flex h-full flex-col gap-3">
+        <p className="font-medium text-text-primary">{exercise.name}</p>
+        <div className="flex flex-wrap gap-2">
+          <Pill accent>{MUSCLE_LABELS[exercise.primaryMuscle]}</Pill>
+          <Pill>{EQUIPMENT_LABELS[exercise.equipment]}</Pill>
+        </div>
+        <span className="mt-auto inline-block text-sm font-medium text-accent">Ver detalhes →</span>
+      </Card>
+    </Link>
+  );
 }
 
-function Select({
-  label,
-  value,
-  onChange,
-  options,
-}: {
-  label: string;
-  value: string;
-  onChange: (value: string) => void;
-  options: SelectOption[];
-}) {
+function Chip({ label, active, onClick }: { label: string; active: boolean; onClick: () => void }) {
   return (
-    <label className="flex flex-col gap-1.5">
-      <span className="text-sm font-medium text-text-secondary">{label}</span>
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="h-10 w-full rounded-md border border-border bg-surface-raised px-3 text-sm text-text-primary outline-none focus-visible:ring-2 focus-visible:ring-focus focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base"
-      >
-        <option value="">Todos</option>
-        {options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {opt.label}
-          </option>
-        ))}
-      </select>
-    </label>
+    <button
+      type="button"
+      aria-pressed={active}
+      onClick={onClick}
+      className={cn(
+        "rounded-full px-3 py-1 text-sm transition-colors",
+        "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus",
+        "focus-visible:ring-offset-2 focus-visible:ring-offset-surface-base",
+        active
+          ? "bg-accent text-on-accent"
+          : "bg-surface-overlay text-text-secondary hover:text-text-primary",
+      )}
+    >
+      {label}
+    </button>
   );
+}
+
+function Pill({ children, accent }: { children: React.ReactNode; accent?: boolean }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium",
+        accent ? "bg-accent-subtle text-accent" : "bg-surface-overlay text-text-secondary",
+      )}
+    >
+      {children}
+    </span>
+  );
+}
+
+function toMessage(err: unknown): string {
+  // A 401 is handled centrally by the auth context (redirect); we still show a
+  // user-safe message here in case the user lingers on the page.
+  if (err instanceof ApiError) {
+    return err.problem.detail;
+  }
+  return "Algo deu errado. Tente novamente.";
 }

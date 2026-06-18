@@ -1,121 +1,36 @@
 "use client";
 
 import { type FormEvent, useCallback, useEffect, useState } from "react";
-import { type WorkoutSummaryView } from "@atlas/contracts";
-import { Button, Card, CardDescription, CardHeader, CardTitle, Input, Skeleton } from "@atlas/ui";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { type WorkoutStatus, type WorkoutSummaryView } from "@atlas/contracts";
+import { Button, Card, CardDescription, Input, Skeleton, cn } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
-import { authService } from "@/services/auth.service";
 import { workoutsService } from "@/services/workouts.service";
 
 /**
- * Workouts board (the `features` layer — blueprint/11). Lists the user's
- * workouts and lets them create, complete, duplicate, and delete — all through
- * the typed service against the shared contract.
- *
- * Session note: persistent client sessions are not wired yet (a follow-up).
- * This screen authenticates inline to obtain an access token, kept in memory
- * for the session; it is never written to storage here. The board degrades
- * gracefully: an expired token surfaces a user-safe message and a re-auth.
+ * Workouts board (the `features` layer — blueprint/11): a rich, information-dense
+ * list of the user's workouts with inline create and per-card actions. Auth is
+ * guaranteed by the app shell, so the service is called directly — the api-client
+ * attaches the token automatically.
  */
 export function WorkoutsBoard() {
-  const [accessToken, setAccessToken] = useState<string | null>(null);
-
-  if (!accessToken) {
-    return <SignIn onSignedIn={setAccessToken} />;
-  }
-  return <Board accessToken={accessToken} onSignOut={() => setAccessToken(null)} />;
-}
-
-function SignIn({ onSignedIn }: { onSignedIn: (token: string) => void }) {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [error, setError] = useState<string | null>(null);
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setError(null);
-    setBusy(true);
-    try {
-      const session = await authService.login({ email, password });
-      onSignedIn(session.tokens.accessToken);
-    } catch (err) {
-      setError(
-        err instanceof ApiError
-          ? err.problem.detail
-          : "Não foi possível entrar agora. Tente novamente.",
-      );
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <Card padding="lg" className="mx-auto max-w-md">
-      <CardHeader>
-        <CardTitle>Seus treinos</CardTitle>
-        <CardDescription>Entre para ver e gerenciar seus treinos.</CardDescription>
-      </CardHeader>
-      <form onSubmit={(e) => void onSubmit(e)} noValidate className="flex flex-col gap-5">
-        {error ? (
-          <p
-            role="alert"
-            className="rounded-md border border-danger-border bg-danger-surface px-3 py-2 text-sm text-danger-text"
-          >
-            {error}
-          </p>
-        ) : null}
-        <Input
-          label="E-mail"
-          type="email"
-          autoComplete="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          requiredField
-        />
-        <Input
-          label="Senha"
-          type="password"
-          autoComplete="current-password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          requiredField
-        />
-        <Button type="submit" fullWidth isLoading={busy} loadingText="Entrando">
-          Entrar
-        </Button>
-      </form>
-    </Card>
-  );
-}
-
-function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () => void }) {
+  const router = useRouter();
   const [workouts, setWorkouts] = useState<WorkoutSummaryView[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [newName, setNewName] = useState("");
   const [creating, setCreating] = useState(false);
   const [pendingId, setPendingId] = useState<string | null>(null);
 
-  const handle = useCallback(
-    (err: unknown) => {
-      if (err instanceof ApiError && err.problem.status === 401) {
-        onSignOut();
-        return;
-      }
-      setError(err instanceof ApiError ? err.problem.detail : "Algo deu errado. Tente novamente.");
-    },
-    [onSignOut],
-  );
-
   const refresh = useCallback(async () => {
     setError(null);
     try {
-      const page = await workoutsService.list(accessToken);
+      const page = await workoutsService.list();
       setWorkouts([...page.items]);
     } catch (err) {
-      handle(err);
+      setError(toMessage(err));
     }
-  }, [accessToken, handle]);
+  }, []);
 
   useEffect(() => {
     void refresh();
@@ -123,18 +38,18 @@ function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () 
 
   async function onCreate(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (!newName.trim()) {
+    const name = newName.trim();
+    if (!name) {
       return;
     }
     setCreating(true);
     setError(null);
     try {
-      await workoutsService.create(accessToken, { name: newName.trim() });
+      const created = await workoutsService.create({ name });
       setNewName("");
-      await refresh();
+      router.push(`/workouts/${created.id}`);
     } catch (err) {
-      handle(err);
-    } finally {
+      setError(toMessage(err));
       setCreating(false);
     }
   }
@@ -146,26 +61,24 @@ function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () 
       await fn();
       await refresh();
     } catch (err) {
-      handle(err);
+      setError(toMessage(err));
     } finally {
       setPendingId(null);
     }
   }
 
   return (
-    <div className="mx-auto flex max-w-2xl flex-col gap-6">
-      <header className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-semibold tracking-tight text-text-primary">Treinos</h1>
-          <p className="text-sm text-text-secondary">Crie, conclua e organize seus treinos.</p>
-        </div>
-        <Button variant="ghost" size="sm" onClick={onSignOut}>
-          Sair
-        </Button>
+    <div className="flex flex-col gap-8">
+      <header className="flex flex-col gap-1">
+        <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Treinos</h1>
+        <p className="text-text-secondary">Crie, organize, conclua e duplique seus treinos.</p>
       </header>
 
-      <Card padding="md">
-        <form onSubmit={(e) => void onCreate(e)} className="flex items-end gap-3">
+      <Card padding="lg">
+        <form
+          onSubmit={(e) => void onCreate(e)}
+          className="flex flex-col gap-3 sm:flex-row sm:items-end"
+        >
           <Input
             label="Novo treino"
             placeholder="Ex.: Push Day"
@@ -173,7 +86,12 @@ function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () 
             onChange={(e) => setNewName(e.target.value)}
             className="flex-1"
           />
-          <Button type="submit" isLoading={creating} loadingText="Criando">
+          <Button
+            type="submit"
+            isLoading={creating}
+            loadingText="Criando"
+            disabled={!newName.trim()}
+          >
             Adicionar
           </Button>
         </form>
@@ -189,62 +107,27 @@ function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () 
       ) : null}
 
       {workouts === null ? (
-        <div className="flex flex-col gap-3">
-          <Skeleton className="h-20 w-full" />
-          <Skeleton className="h-20 w-full" />
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <Skeleton key={i} className="h-40 w-full rounded-xl" />
+          ))}
         </div>
       ) : workouts.length === 0 ? (
-        <Card padding="lg">
-          <CardDescription>
-            Você ainda não tem treinos. Crie o primeiro acima para começar.
-          </CardDescription>
+        <Card padding="lg" className="flex flex-col items-start gap-1">
+          <p className="font-medium text-text-primary">Você ainda não tem treinos</p>
+          <CardDescription>Crie o primeiro acima para começar a montar sua rotina.</CardDescription>
         </Card>
       ) : (
-        <ul className="flex flex-col gap-3">
+        <ul className="grid grid-cols-1 gap-4 sm:grid-cols-2">
           {workouts.map((w) => (
             <li key={w.id}>
-              <Card padding="md" className="flex flex-col gap-3">
-                <div className="flex items-start justify-between gap-4">
-                  <div>
-                    <p className="font-medium text-text-primary">{w.name}</p>
-                    <p className="text-xs text-text-tertiary">
-                      {w.itemCount} {w.itemCount === 1 ? "exercício" : "exercícios"} ·{" "}
-                      <StatusBadge status={w.status} />
-                    </p>
-                  </div>
-                </div>
-                <div className="flex flex-wrap gap-2">
-                  <Button
-                    variant="secondary"
-                    size="sm"
-                    isLoading={pendingId === w.id}
-                    disabled={w.status === "completed"}
-                    onClick={() =>
-                      void act(w.id, () => workoutsService.complete(accessToken, w.id))
-                    }
-                  >
-                    Concluir
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    isLoading={pendingId === w.id}
-                    onClick={() =>
-                      void act(w.id, () => workoutsService.duplicate(accessToken, w.id))
-                    }
-                  >
-                    Duplicar
-                  </Button>
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    isLoading={pendingId === w.id}
-                    onClick={() => void act(w.id, () => workoutsService.remove(accessToken, w.id))}
-                  >
-                    Excluir
-                  </Button>
-                </div>
-              </Card>
+              <WorkoutCard
+                workout={w}
+                pending={pendingId === w.id}
+                onComplete={() => void act(w.id, () => workoutsService.complete(w.id))}
+                onDuplicate={() => void act(w.id, () => workoutsService.duplicate(w.id))}
+                onRemove={() => void act(w.id, () => workoutsService.remove(w.id))}
+              />
             </li>
           ))}
         </ul>
@@ -253,7 +136,91 @@ function Board({ accessToken, onSignOut }: { accessToken: string; onSignOut: () 
   );
 }
 
-function StatusBadge({ status }: { status: WorkoutSummaryView["status"] }) {
-  const label = status === "completed" ? "Concluído" : status === "active" ? "Ativo" : "Rascunho";
-  return <span className="text-text-secondary">{label}</span>;
+function WorkoutCard({
+  workout,
+  pending,
+  onComplete,
+  onDuplicate,
+  onRemove,
+}: {
+  workout: WorkoutSummaryView;
+  pending: boolean;
+  onComplete: () => void;
+  onDuplicate: () => void;
+  onRemove: () => void;
+}) {
+  const { id, name, status, itemCount } = workout;
+  return (
+    <Card padding="lg" className="flex h-full flex-col gap-4">
+      <div className="flex items-start justify-between gap-3">
+        <Link
+          href={`/workouts/${id}`}
+          className={cn(
+            "min-w-0 text-lg font-medium text-text-primary transition-colors hover:text-accent",
+            "focus-visible:outline-none focus-visible:underline",
+          )}
+        >
+          <span className="line-clamp-2 break-words">{name}</span>
+        </Link>
+        <StatusBadge status={status} />
+      </div>
+
+      <p className="text-sm text-text-tertiary">
+        {itemCount} {itemCount === 1 ? "exercício" : "exercícios"}
+      </p>
+
+      <div className="mt-auto flex flex-wrap gap-2">
+        <Link href={`/workouts/${id}`}>
+          <Button variant="primary" size="sm">
+            Abrir
+          </Button>
+        </Link>
+        <Button
+          variant="secondary"
+          size="sm"
+          isLoading={pending}
+          disabled={status === "completed"}
+          onClick={onComplete}
+        >
+          Concluir
+        </Button>
+        <Button variant="ghost" size="sm" isLoading={pending} onClick={onDuplicate}>
+          Duplicar
+        </Button>
+        <Button variant="ghost" size="sm" isLoading={pending} onClick={onRemove}>
+          Excluir
+        </Button>
+      </div>
+    </Card>
+  );
+}
+
+const STATUS_LABELS: Record<WorkoutStatus, string> = {
+  draft: "Rascunho",
+  active: "Ativo",
+  completed: "Concluído",
+};
+
+export function StatusBadge({ status }: { status: WorkoutStatus }) {
+  return (
+    <span
+      className={cn(
+        "inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
+        status === "completed"
+          ? "border-success-border bg-success-surface text-success-text"
+          : status === "active"
+            ? "border-transparent bg-accent-subtle text-accent"
+            : "border-border bg-surface-overlay text-text-secondary",
+      )}
+    >
+      {STATUS_LABELS[status]}
+    </span>
+  );
+}
+
+function toMessage(err: unknown): string {
+  if (err instanceof ApiError) {
+    return err.problem.detail;
+  }
+  return "Algo deu errado. Tente novamente.";
 }

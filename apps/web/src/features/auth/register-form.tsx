@@ -1,9 +1,11 @@
 "use client";
 
 import { type FormEvent, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Button, Input } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
 import { authService } from "@/services/auth.service";
+import { useAuth } from "@/features/auth/auth-context";
 import { type ValidationIssue } from "@atlas/contracts";
 
 interface FormState {
@@ -20,11 +22,12 @@ const EMPTY: FormState = { displayName: "", email: "", password: "" };
  * Field errors come from the API's RFC 7807 `issues`, mapped back to inputs.
  */
 export function RegisterForm() {
+  const router = useRouter();
+  const { signIn } = useAuth();
   const [form, setForm] = useState<FormState>(EMPTY);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [formError, setFormError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [done, setDone] = useState(false);
 
   const update = (key: keyof FormState) => (event: { target: { value: string } }) => {
     setForm((prev) => ({ ...prev, [key]: event.target.value }));
@@ -37,15 +40,16 @@ export function RegisterForm() {
     setIsSubmitting(true);
 
     try {
-      await authService.register(form);
-      setDone(true);
+      const session = await authService.register(form);
+      // Registration returns a full session — sign in and go straight to the app.
+      signIn(session);
+      router.replace("/dashboard");
     } catch (error) {
       if (error instanceof ApiError) {
         applyApiError(error.problem.issues, error.problem.detail);
       } else {
         setFormError("Não foi possível concluir o cadastro agora. Tente novamente.");
       }
-    } finally {
       setIsSubmitting(false);
     }
   }
@@ -56,14 +60,6 @@ export function RegisterForm() {
       return;
     }
     setFormError(detail);
-  }
-
-  if (done) {
-    return (
-      <p role="status" className="text-text-secondary">
-        Sua jornada começou. Bem-vindo ao Atlas.
-      </p>
-    );
   }
 
   return (

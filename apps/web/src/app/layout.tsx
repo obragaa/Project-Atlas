@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { LivingBackground } from "@/components/living-background/living-background";
+import { AuthProvider } from "@/features/auth/auth-context";
 import "./globals.css";
 
 const inter = Inter({
@@ -35,7 +36,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" data-theme="dark" className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body className="min-h-dvh font-sans text-text-primary antialiased">
         <LivingBackground />
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );

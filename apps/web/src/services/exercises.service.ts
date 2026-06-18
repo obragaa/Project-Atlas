@@ -17,13 +17,10 @@ export interface ExerciseListParams {
 
 /**
  * Typed Exercises catalogue operations (the `services` layer — blueprint/11).
- * Read-only over the shared contract.
+ * The access token is attached automatically by the api-client.
  */
 export const exercisesService = {
-  list(
-    accessToken: string,
-    params: ExerciseListParams = {},
-  ): Promise<CursorPage<ExerciseSummaryView>> {
+  list(params: ExerciseListParams = {}): Promise<CursorPage<ExerciseSummaryView>> {
     const qs = new URLSearchParams();
     if (params.search) qs.set("search", params.search);
     if (params.muscle) qs.set("muscle", params.muscle);
@@ -32,11 +29,10 @@ export const exercisesService = {
     const query = qs.toString();
     return apiRequest<CursorPage<ExerciseSummaryView>>(
       `${API_ROUTES.exercises.collection}${query ? `?${query}` : ""}`,
-      { accessToken },
     );
   },
 
-  get(accessToken: string, slug: string): Promise<ExerciseView> {
-    return apiRequest<ExerciseView>(API_ROUTES.exercises.bySlug(slug), { accessToken });
+  get(slug: string): Promise<ExerciseView> {
+    return apiRequest<ExerciseView>(API_ROUTES.exercises.bySlug(slug));
   },
 };
