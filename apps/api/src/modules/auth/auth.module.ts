@@ -8,7 +8,7 @@ import { RefreshSessionUseCase } from "./application/refresh-session.use-case.js
 import { GetCurrentUserUseCase } from "./application/get-current-user.use-case.js";
 import { Argon2PasswordHasher } from "./infrastructure/argon2-password.hasher.js";
 import { JwtTokenService } from "./infrastructure/jwt-token.service.js";
-import { InMemoryUserRepository } from "./infrastructure/in-memory-user.repository.js";
+import { PostgresUserRepository } from "./infrastructure/postgres-user.repository.js";
 import { AuthController } from "./presentation/auth.controller.js";
 import { JwtAuthGuard } from "./presentation/jwt-auth.guard.js";
 import { RolesGuard } from "./presentation/roles.guard.js";
@@ -26,7 +26,7 @@ import { RolesGuard } from "./presentation/roles.guard.js";
     LoginUserUseCase,
     RefreshSessionUseCase,
     GetCurrentUserUseCase,
-    { provide: USER_REPOSITORY, useClass: InMemoryUserRepository },
+    { provide: USER_REPOSITORY, useClass: PostgresUserRepository },
     { provide: PASSWORD_HASHER, useClass: Argon2PasswordHasher },
     { provide: TOKEN_SERVICE, useClass: JwtTokenService },
     { provide: APP_GUARD, useClass: JwtAuthGuard },

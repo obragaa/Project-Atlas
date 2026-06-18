@@ -1,6 +1,6 @@
-import { LoginUserUseCase } from "./login-user.use-case";
+﻿import { LoginUserUseCase } from "./login-user.use-case";
 import { RegisterUserUseCase } from "./register-user.use-case";
-import { InMemoryUserRepository } from "../infrastructure/in-memory-user.repository";
+import { FakeUserRepository } from "../testing/fake-user.repository";
 import { type PasswordHasher, type TokenService } from "../domain/ports";
 
 const hashRegistry = new Map<string, string>();
@@ -22,7 +22,7 @@ const fakeTokens: TokenService = {
 };
 
 describe("LoginUserUseCase", () => {
-  const repo = new InMemoryUserRepository();
+  const repo = new FakeUserRepository();
   const login = new LoginUserUseCase(repo, fakeHasher, fakeTokens);
 
   beforeAll(async () => {

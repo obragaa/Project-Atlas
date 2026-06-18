@@ -1,22 +1,14 @@
-import { Injectable } from "@nestjs/common";
 import { type UserRepository } from "../domain/ports.js";
 import { type User } from "../domain/user.js";
 import { type UserId } from "../domain/user-id.js";
 import { type Email } from "../domain/value-objects/email.js";
 
 /**
- * In-memory `UserRepository` adapter.
- *
- * TEMPORARY (tracked exception — blueprint/23 Governance): the Blueprint
- * mandates PostgreSQL (ADR-0001). Because the Domain and Application layers
- * depend only on the `UserRepository` port, swapping this for a Drizzle/Postgres
- * adapter is a pure Infrastructure change with no impact on business rules
- * (blueprint/12 Dependency Rule). This keeps the phase runnable end to end.
- *
- * Owner: backend. Removal condition: when the persistence layer (doc 13) lands.
+ * In-memory `UserRepository` fake for UNIT tests of the application layer
+ * (blueprint/18: use cases are tested in isolation, no infrastructure). The
+ * production adapter is `PostgresUserRepository`; this exists only under test.
  */
-@Injectable()
-export class InMemoryUserRepository implements UserRepository {
+export class FakeUserRepository implements UserRepository {
   private readonly byId = new Map<string, User>();
   private readonly idByEmail = new Map<string, string>();
 

@@ -9,3 +9,6 @@ pnpm-lock.yaml
 
 # The Blueprint is the source-of-truth contract — never reformat it.
 blueprint/
+
+# Generated database migrations (drizzle-kit output) — keep verbatim.
+apps/api/drizzle/

@@ -1,5 +1,5 @@
-import { RegisterUserUseCase } from "./register-user.use-case";
-import { InMemoryUserRepository } from "../infrastructure/in-memory-user.repository";
+﻿import { RegisterUserUseCase } from "./register-user.use-case";
+import { FakeUserRepository } from "../testing/fake-user.repository";
 import { type PasswordHasher, type TokenService } from "../domain/ports";
 import { Email } from "../domain/value-objects/email";
 
@@ -26,7 +26,7 @@ const fakeTokens: TokenService = {
 
 describe("RegisterUserUseCase", () => {
   const buildUseCase = () =>
-    new RegisterUserUseCase(new InMemoryUserRepository(), fakeHasher, fakeTokens);
+    new RegisterUserUseCase(new FakeUserRepository(), fakeHasher, fakeTokens);
 
   const validCommand = {
     email: "athlete@atlas.app",
@@ -46,7 +46,7 @@ describe("RegisterUserUseCase", () => {
 
   it("rejects a duplicate email with a conflict", async () => {
     const useCase = buildUseCase();
-    const repo = new InMemoryUserRepository();
+    const repo = new FakeUserRepository();
     const sharedUseCase = new RegisterUserUseCase(repo, fakeHasher, fakeTokens);
 
     await sharedUseCase.execute(validCommand);
@@ -64,7 +64,7 @@ describe("RegisterUserUseCase", () => {
   });
 
   it("never stores the plaintext password", async () => {
-    const repo = new InMemoryUserRepository();
+    const repo = new FakeUserRepository();
     const useCase = new RegisterUserUseCase(repo, fakeHasher, fakeTokens);
     await useCase.execute(validCommand);
 
