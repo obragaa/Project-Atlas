@@ -1,4 +1,12 @@
-import { IsEmail, IsString, Length, MaxLength, MinLength } from "class-validator";
+import {
+  IsBoolean,
+  IsEmail,
+  IsOptional,
+  IsString,
+  Length,
+  MaxLength,
+  MinLength,
+} from "class-validator";
 import { type LoginRequest, type RefreshRequest, type RegisterRequest } from "@atlas/contracts";
 
 /**
@@ -33,4 +41,14 @@ export class RefreshRequestDto implements RefreshRequest {
   @IsString()
   @MinLength(1)
   refreshToken!: string;
+}
+
+export class LogoutRequestDto {
+  @IsString()
+  @MinLength(1)
+  refreshToken!: string;
+
+  @IsOptional()
+  @IsBoolean()
+  allDevices?: boolean;
 }

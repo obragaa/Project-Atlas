@@ -4,24 +4,23 @@ import { ConflictError } from "../../../shared/domain/errors.js";
 import {
   PASSWORD_HASHER,
   type PasswordHasher,
-  TOKEN_SERVICE,
-  type TokenService,
   USER_REPOSITORY,
   type UserRepository,
 } from "../domain/ports.js";
 import { Email } from "../domain/value-objects/email.js";
 import { RawPassword } from "../domain/value-objects/password.js";
 import { User } from "../domain/user.js";
-import { toAuthSession } from "./session.mapper.js";
+import { SessionFactory, type SessionContext } from "./session.factory.js";
 
 export interface RegisterUserCommand {
   readonly email: string;
   readonly password: string;
   readonly displayName: string;
+  readonly session: SessionContext;
 }
 
 /**
- * Registers a new account and returns an authenticated session.
+ * Registers a new account and opens a tracked session.
  *
  * Business rules (blueprint/15): email must be unique (conflict otherwise);
  * password must satisfy policy; password is stored only as a hash; a new user
@@ -33,7 +32,7 @@ export class RegisterUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
-    @Inject(TOKEN_SERVICE) private readonly tokens: TokenService,
+    private readonly sessionFactory: SessionFactory,
   ) {}
 
   async execute(command: RegisterUserCommand): Promise<AuthSession> {
@@ -53,6 +52,6 @@ export class RegisterUserUseCase {
 
     await this.users.save(user);
 
-    return toAuthSession(user, this.tokens);
+    return this.sessionFactory.openSession(user, command.session);
   }
 }

@@ -25,6 +25,14 @@ export interface PasswordHasher {
   verify(hash: string, plaintext: string): Promise<boolean>;
 }
 
+export const REFRESH_TOKEN_HASHER = Symbol("REFRESH_TOKEN_HASHER");
+
+/** Hashes refresh tokens for at-rest storage (never plaintext, blueprint/15). */
+export interface RefreshTokenHasher {
+  hash(rawToken: string): string;
+  matches(a: string, b: string): boolean;
+}
+
 export const TOKEN_SERVICE = Symbol("TOKEN_SERVICE");
 
 export interface AccessTokenClaims {
@@ -32,11 +40,25 @@ export interface AccessTokenClaims {
   readonly roles: readonly Role[];
 }
 
+/** Session context embedded in a refresh token so the store finds it in O(1). */
+export interface RefreshTokenContext {
+  readonly sid: string;
+  readonly fid: string;
+}
+
+export interface RefreshTokenClaims extends RefreshTokenContext {
+  readonly sub: string;
+  /** Per-rotation unique id. */
+  readonly jti: string;
+}
+
 export interface TokenService {
   issueAccessToken(claims: AccessTokenClaims): Promise<string>;
-  issueRefreshToken(subject: string): Promise<string>;
+  issueRefreshToken(subject: string, context: RefreshTokenContext): Promise<string>;
   verifyAccessToken(token: string): Promise<AccessTokenClaims>;
-  verifyRefreshToken(token: string): Promise<{ sub: string }>;
+  verifyRefreshToken(token: string): Promise<RefreshTokenClaims>;
   /** Access token lifetime in seconds (advertised to clients). */
   readonly accessTokenTtl: number;
+  /** Refresh token lifetime in seconds (drives session/key TTLs). */
+  readonly refreshTokenTtl: number;
 }

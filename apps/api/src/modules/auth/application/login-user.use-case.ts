@@ -4,17 +4,16 @@ import { AuthenticationError } from "../../../shared/domain/errors.js";
 import {
   PASSWORD_HASHER,
   type PasswordHasher,
-  TOKEN_SERVICE,
-  type TokenService,
   USER_REPOSITORY,
   type UserRepository,
 } from "../domain/ports.js";
 import { Email } from "../domain/value-objects/email.js";
-import { toAuthSession } from "./session.mapper.js";
+import { SessionFactory, type SessionContext } from "./session.factory.js";
 
 export interface LoginUserCommand {
   readonly email: string;
   readonly password: string;
+  readonly session: SessionContext;
 }
 
 /**
@@ -35,7 +34,7 @@ export class LoginUserUseCase {
   constructor(
     @Inject(USER_REPOSITORY) private readonly users: UserRepository,
     @Inject(PASSWORD_HASHER) private readonly hasher: PasswordHasher,
-    @Inject(TOKEN_SERVICE) private readonly tokens: TokenService,
+    private readonly sessionFactory: SessionFactory,
   ) {}
 
   async execute(command: LoginUserCommand): Promise<AuthSession> {
@@ -49,6 +48,6 @@ export class LoginUserUseCase {
       throw new AuthenticationError("E-mail ou senha inválidos.", "auth.invalid_credentials");
     }
 
-    return toAuthSession(user, this.tokens);
+    return this.sessionFactory.openSession(user, command.session);
   }
 }

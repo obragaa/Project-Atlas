@@ -1,6 +1,7 @@
-﻿import { RegisterUserUseCase } from "./register-user.use-case";
+import { RegisterUserUseCase } from "./register-user.use-case";
 import { FakeUserRepository } from "../testing/fake-user.repository";
-import { type PasswordHasher, type TokenService } from "../domain/ports";
+import { buildFakeSessionFactory } from "../testing/build-session-factory";
+import { type PasswordHasher } from "../domain/ports";
 import { Email } from "../domain/value-objects/email";
 
 // A reversible-free fake: the "hash" is an opaque token, not the plaintext, so
@@ -16,22 +17,15 @@ const fakeHasher: PasswordHasher = {
   verify: (hash, plaintext) => Promise.resolve(hashRegistry.get(hash) === plaintext),
 };
 
-const fakeTokens: TokenService = {
-  accessTokenTtl: 900,
-  issueAccessToken: () => Promise.resolve("access-token"),
-  issueRefreshToken: () => Promise.resolve("refresh-token"),
-  verifyAccessToken: () => Promise.resolve({ sub: "u", roles: ["user"] }),
-  verifyRefreshToken: () => Promise.resolve({ sub: "u" }),
-};
-
 describe("RegisterUserUseCase", () => {
   const buildUseCase = () =>
-    new RegisterUserUseCase(new FakeUserRepository(), fakeHasher, fakeTokens);
+    new RegisterUserUseCase(new FakeUserRepository(), fakeHasher, buildFakeSessionFactory());
 
   const validCommand = {
     email: "athlete@atlas.app",
     password: "a-strong-passphrase",
     displayName: "Atleta",
+    session: { deviceId: "device-1", riskLevel: "low" as const },
   };
 
   it("registers a new user with least privilege and returns a session", async () => {
@@ -47,7 +41,7 @@ describe("RegisterUserUseCase", () => {
   it("rejects a duplicate email with a conflict", async () => {
     const useCase = buildUseCase();
     const repo = new FakeUserRepository();
-    const sharedUseCase = new RegisterUserUseCase(repo, fakeHasher, fakeTokens);
+    const sharedUseCase = new RegisterUserUseCase(repo, fakeHasher, buildFakeSessionFactory());
 
     await sharedUseCase.execute(validCommand);
     await expect(sharedUseCase.execute(validCommand)).rejects.toMatchObject({
@@ -65,7 +59,7 @@ describe("RegisterUserUseCase", () => {
 
   it("never stores the plaintext password", async () => {
     const repo = new FakeUserRepository();
-    const useCase = new RegisterUserUseCase(repo, fakeHasher, fakeTokens);
+    const useCase = new RegisterUserUseCase(repo, fakeHasher, buildFakeSessionFactory());
     await useCase.execute(validCommand);
 
     const stored = await repo.findByEmail(Email.create(validCommand.email));
