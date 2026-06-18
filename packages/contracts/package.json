@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "description": "Atlas API contract (OpenAPI) and shared transport types — the source of truth for the API.",
-  "type": "module",
   "exports": {
     ".": {
       "types": "./src/index.ts",

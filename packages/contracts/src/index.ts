@@ -4,9 +4,9 @@
  * formal source of truth (blueprint/14 - API.md, ADR-001 "Contract First");
  * these types mirror it for type-safe authoring.
  */
-export * from "./errors.js";
-export * from "./pagination.js";
-export * from "./auth.js";
-export * from "./core.js";
-export * from "./health.js";
-export * from "./routes.js";
+export * from "./errors";
+export * from "./pagination";
+export * from "./auth";
+export * from "./core";
+export * from "./health";
+export * from "./routes";
