@@ -28,5 +28,6 @@ import { WorkoutsController } from "./presentation/workouts.controller.js";
     DuplicateWorkoutUseCase,
     { provide: WORKOUT_REPOSITORY, useClass: PostgresWorkoutRepository },
   ],
+  exports: [CreateWorkoutUseCase],
 })
 export class WorkoutsModule {}

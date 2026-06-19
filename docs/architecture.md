@@ -88,27 +88,33 @@ domain module (`apps/api/src/shared`, wired by the global `SharedKernelModule`):
 The first business domain after auth. The Core dashboard aggregates these
 domains, so they come first (ADR-0003).
 
-| Area                                                                              | Status              |
-| --------------------------------------------------------------------------------- | ------------------- |
-| Workouts domain: `Workout` aggregate → items → sets, value objects, events        | ✅ (unit-tested)    |
-| Workouts use cases: create/get/list/update/delete/complete/duplicate              | ✅                  |
-| Workouts persistence: Drizzle tables + migration `0001`, `PostgresWorkoutRepo`    | ✅ (PGlite integ.)  |
-| Workouts API: contract-first, RFC 7807, cursor pagination, ownership 404          | ✅ (flow-verified)  |
-| `WorkoutCompleted` event → audit channel                                          | ✅ (flow-verified)  |
-| Web: `/workouts` board (list/create/complete/duplicate/delete) via the contract   | ✅ (build-verified) |
-| Exercises domain: curated catalogue (read-mostly, seeded), search + filters       | ✅ (unit-tested)    |
-| Exercises persistence: Drizzle table + migration `0002`, idempotent seed          | ✅ (PGlite integ.)  |
-| Exercises API: `GET /exercises` (search/filter/cursor), `GET /exercises/{slug}`   | ✅ (flow-verified)  |
-| Web: `/exercises` catalogue (search + muscle/equipment filters, load-more)        | ✅ (build-verified) |
-| Progress domain: per-user measurement series (weight + body), derived records     | ✅ (unit-tested)    |
-| Progress persistence: Drizzle table + migration `0003`, UPSERT per (user, date)   | ✅ (PGlite integ.)  |
-| Progress API: record/list/delete measurements + derived summary & chart series    | ✅ (flow-verified)  |
-| Web: full app — persistent session, sidebar nav, dashboard, and a `/progress`     | ✅ (build-verified) |
-| screen (records, weight chart, log, history); premium imagery throughout          |                     |
-| Gamification domain: own activity log, derived streak + missions, achievements    | ✅ (unit-tested)    |
-| Gamification engine: reacts to WorkoutCompleted/MeasurementRecorded events        | ✅ (PGlite integ.)  |
-| Gamification API: `GET /gamification/overview` (streak + missions + achievements) | ✅ (flow-verified)  |
-| Web: `/achievements` screen + dashboard streak/achievement highlights             | ✅ (build-verified) |
+| Area                                                                               | Status               |
+| ---------------------------------------------------------------------------------- | -------------------- |
+| Workouts domain: `Workout` aggregate → items → sets, value objects, events         | ✅ (unit-tested)     |
+| Workouts use cases: create/get/list/update/delete/complete/duplicate               | ✅                   |
+| Workouts persistence: Drizzle tables + migration `0001`, `PostgresWorkoutRepo`     | ✅ (PGlite integ.)   |
+| Workouts API: contract-first, RFC 7807, cursor pagination, ownership 404           | ✅ (flow-verified)   |
+| `WorkoutCompleted` event → audit channel                                           | ✅ (flow-verified)   |
+| Web: `/workouts` board (list/create/complete/duplicate/delete) via the contract    | ✅ (build-verified)  |
+| Exercises domain: curated catalogue (read-mostly, seeded), search + filters        | ✅ (unit-tested)     |
+| Exercises persistence: Drizzle table + migration `0002`, idempotent seed           | ✅ (PGlite integ.)   |
+| Exercises API: `GET /exercises` (search/filter/cursor), `GET /exercises/{slug}`    | ✅ (flow-verified)   |
+| Web: `/exercises` catalogue (search + muscle/equipment filters, load-more)         | ✅ (build-verified)  |
+| Progress domain: per-user measurement series (weight + body), derived records      | ✅ (unit-tested)     |
+| Progress persistence: Drizzle table + migration `0003`, UPSERT per (user, date)    | ✅ (PGlite integ.)   |
+| Progress API: record/list/delete measurements + derived summary & chart series     | ✅ (flow-verified)   |
+| Web: full app — persistent session, sidebar nav, dashboard, and a `/progress`      | ✅ (build-verified)  |
+| screen (records, weight chart, log, history); premium imagery throughout           |                      |
+| Gamification domain: own activity log, derived streak + missions, achievements     | ✅ (unit-tested)     |
+| Gamification engine: reacts to WorkoutCompleted/MeasurementRecorded events         | ✅ (PGlite integ.)   |
+| Gamification API: `GET /gamification/overview` (streak + missions + achievements)  | ✅ (flow-verified)   |
+| Web: `/achievements` screen + dashboard streak/achievement highlights              | ✅ (build-verified)  |
+| Exercise catalogue expanded to ~45 entries covering every muscle/equipment         | ✅ (seed integ.)     |
+| Atlas AI: provider-agnostic gateway, versioned prompts, tool loop, guardrails      | ✅ (unit-tested)     |
+| Atlas AI adapters: `MockLlmProvider` (default, no key) + `AnthropicLlmProvider`    | ✅ (config-switched) |
+| Atlas AI tools: `search_exercises` + `create_workout` (grounded in the domains)    | ✅ (flow-verified)   |
+| Atlas AI API: `POST /ai/chat`; observability (tokens/latency) + `ai.chat` audit    | ✅ (flow-verified)   |
+| Web: `/atlas-ai` chat (transcript, suggestions, workout actions) + nav + dashboard | ✅ (build-verified)  |
 
 The shared `@atlas/contracts` package now **builds to `dist`** (CJS + d.ts):
 once the API consumes a runtime _value_ from it (e.g. `LOAD_UNITS`), the package
@@ -158,11 +164,13 @@ builds it before its consumers.
   channel and domain-event dispatch.
 - **Phase 3 — Core experience (in progress):** Workouts ✅ (ADR-0003),
   Exercises ✅ (ADR-0004), Progress ✅ (ADR-0005), and Gamification ✅
-  (ADR-0006 — streak, missions, achievements, event-driven) delivered, plus a
-  real navigable web app (persistent session, sidebar, dashboard, premium
-  imagery). Next: the Core dashboard (docs 03/07) deepening the aggregation, then
-  optional domains (Nutrição, Perfil, Onboarding) and Atlas AI (doc 10/22). A
-  future additive change links `WorkoutItem` to a catalogue `Exercise` (doc 14).
+  (ADR-0006 — streak, missions, achievements, event-driven) and Atlas AI ✅
+  (ADR-0007 — provider-agnostic gateway, versioned prompts, tool calling
+  grounded in the Exercises/Workouts domains) delivered, plus a real navigable
+  web app (persistent session, sidebar, dashboard, premium imagery). Next: the
+  Core dashboard (docs 03/07) deepening the aggregation, then optional domains
+  (Nutrição, Perfil, Onboarding). A future additive change links `WorkoutItem`
+  to a catalogue `Exercise` (doc 14).
 - **Phase 4 — Atlas AI:** the AI Gateway, Context/Prompt/Tool engines, prompt
   registry, guardrails, observability (docs 10/22).
 - **Phase 5 — Observability & delivery hardening:** OpenTelemetry traces/metrics

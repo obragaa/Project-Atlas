@@ -16,6 +16,7 @@ deviation from it.
 | [0004](./0004-exercises-domain.md)      | Exercises Domain Model    | Accepted |
 | [0005](./0005-progress-domain.md)       | Progress Domain Model     | Accepted |
 | [0006](./0006-gamification-domain.md)   | Gamification Domain Model | Accepted |
+| [0007](./0007-atlas-ai.md)              | Atlas AI Gateway & Tools  | Accepted |
 
 ## Template
 

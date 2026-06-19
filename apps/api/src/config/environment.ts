@@ -56,8 +56,22 @@ const environmentSchema = z
     // Cap on concurrent active sessions per user; 0 = unlimited (doc 15).
     AUTH_MAX_SESSIONS_PER_USER: z.coerce.number().int().nonnegative().default(0),
 
+    // ── Atlas AI (blueprint/22 - AI Engineering.md, ADR-0002/0007) ──
+    // Provider-agnostic gateway. `mock` runs with no key (default); `anthropic`
+    // uses Claude via the AI_ANTHROPIC_API_KEY. Tiers/models are config, not code.
+    AI_PROVIDER: z.enum(["mock", "anthropic"]).default("mock"),
+    AI_ANTHROPIC_API_KEY: z.string().optional(),
+    AI_DEFAULT_MODEL: z.string().default("claude-haiku-4-5"),
+    /** Output-token ceiling per AI turn (cost/safety, doc 22). */
+    AI_MAX_OUTPUT_TOKENS: z.coerce.number().int().positive().default(1024),
+
     LOG_LEVEL: z.enum(["trace", "debug", "info", "warn", "error", "fatal"]).default("info"),
     OTEL_SERVICE_NAME: z.string().default("atlas-api"),
+  })
+  // Fail-secure: selecting the Anthropic provider requires a key (doc 16).
+  .refine((env) => env.AI_PROVIDER !== "anthropic" || Boolean(env.AI_ANTHROPIC_API_KEY), {
+    message: "AI_ANTHROPIC_API_KEY is required when AI_PROVIDER=anthropic",
+    path: ["AI_ANTHROPIC_API_KEY"],
   })
   // Fail-secure: in postgres mode a real DATABASE_URL is mandatory (doc 16).
   .refine((env) => env.DATABASE_DRIVER !== "postgres" || Boolean(env.DATABASE_URL), {

@@ -17,6 +17,7 @@ import { WorkoutsModule } from "./modules/workouts/workouts.module.js";
 import { ExercisesModule } from "./modules/exercises/exercises.module.js";
 import { ProgressModule } from "./modules/progress/progress.module.js";
 import { GamificationModule } from "./modules/gamification/gamification.module.js";
+import { AiModule } from "./modules/ai/ai.module.js";
 import { type Request } from "express";
 
 /**
@@ -67,6 +68,7 @@ import { type Request } from "express";
     ExercisesModule,
     ProgressModule,
     GamificationModule,
+    AiModule,
     HealthModule,
   ],
 })

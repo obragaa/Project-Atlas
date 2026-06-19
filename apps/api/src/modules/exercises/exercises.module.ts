@@ -27,6 +27,7 @@ import { ExercisesController } from "./presentation/exercises.controller.js";
     GetExerciseUseCase,
     { provide: EXERCISE_REPOSITORY, useClass: PostgresExerciseRepository },
   ],
+  exports: [ListExercisesUseCase, GetExerciseUseCase],
 })
 export class ExercisesModule implements OnApplicationBootstrap {
   constructor(

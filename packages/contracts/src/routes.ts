@@ -47,4 +47,8 @@ export const API_ROUTES = {
     /** Combined streak + missions + achievements snapshot. */
     overview: "/v1/gamification/overview",
   },
+  ai: {
+    /** Send a chat turn to the Atlas AI (may take grounded actions). */
+    chat: "/v1/ai/chat",
+  },
 } as const;

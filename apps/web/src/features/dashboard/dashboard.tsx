@@ -93,6 +93,32 @@ export function Dashboard() {
         <Stat icon={LibraryIcon} label="Exercícios no catálogo" value={exerciseCount} />
       </section>
 
+      {/* 2.2 — Atlas AI highlight (the principal agent) */}
+      <section>
+        <Link href="/atlas-ai">
+          <Card
+            interactive
+            padding="lg"
+            className="flex items-center gap-4 border-accent/40 bg-accent-subtle"
+          >
+            <span
+              className="grid h-12 w-12 shrink-0 place-items-center rounded-xl bg-accent text-on-accent"
+              style={{ animation: "atlas-pulse-glow 4s ease-in-out infinite" }}
+            >
+              <SparkIcon className="h-6 w-6" />
+            </span>
+            <div className="min-w-0 flex-1">
+              <p className="text-xs font-medium uppercase tracking-wide text-accent">Atlas AI</p>
+              <p className="font-medium text-text-primary">Peça um treino ou tire uma dúvida</p>
+              <p className="text-sm text-text-secondary">
+                O Atlas monta treinos com exercícios reais do catálogo pra você.
+              </p>
+            </div>
+            <span className="hidden text-sm font-medium text-accent sm:inline">Conversar →</span>
+          </Card>
+        </Link>
+      </section>
+
       {/* 2.5 — Gamification highlight */}
       <section className="flex flex-col gap-3">
         <h2 className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">
@@ -463,6 +489,23 @@ function LibraryIcon(props: SVGProps<SVGSVGElement>) {
   );
 }
 
+function SparkIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+      {...props}
+    >
+      <path d="M12 3v3M12 18v3M3 12h3M18 12h3" />
+      <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4z" />
+    </svg>
+  );
+}
 function TrendingIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <svg

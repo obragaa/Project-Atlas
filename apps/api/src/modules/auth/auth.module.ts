@@ -64,6 +64,6 @@ const sessionStoreProvider: Provider = {
     { provide: APP_GUARD, useClass: JwtAuthGuard },
     { provide: APP_GUARD, useClass: RolesGuard },
   ],
-  exports: [TOKEN_SERVICE, USER_REPOSITORY, SESSION_STORE],
+  exports: [TOKEN_SERVICE, USER_REPOSITORY, SESSION_STORE, GetCurrentUserUseCase],
 })
 export class AuthModule {}

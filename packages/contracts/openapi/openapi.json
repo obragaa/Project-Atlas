@@ -13,7 +13,8 @@
     { "name": "Workouts", "description": "Create, organize, and complete workouts" },
     { "name": "Exercises", "description": "The curated exercise catalogue" },
     { "name": "Progress", "description": "Body measurements, history, and personal records" },
-    { "name": "Gamification", "description": "Streak, missions, and achievements" }
+    { "name": "Gamification", "description": "Streak, missions, and achievements" },
+    { "name": "AI", "description": "Atlas AI — chat and grounded actions" }
   ],
   "security": [{ "bearerAuth": [] }],
   "paths": {
@@ -554,6 +555,32 @@
           "401": { "$ref": "#/components/responses/Unauthorized" }
         }
       }
+    },
+    "/v1/ai/chat": {
+      "post": {
+        "tags": ["AI"],
+        "summary": "Send a chat turn to the Atlas AI (may take grounded actions)",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/AiChatRequest" }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "The assistant's reply and any actions taken",
+            "content": {
+              "application/json": {
+                "schema": { "$ref": "#/components/schemas/AiChatResponse" }
+              }
+            }
+          },
+          "401": { "$ref": "#/components/responses/Unauthorized" },
+          "422": { "$ref": "#/components/responses/ValidationError" }
+        }
+      }
     }
   },
   "components": {
@@ -1071,6 +1098,47 @@
           },
           "unlockedCount": { "type": "integer" },
           "totalAchievements": { "type": "integer" }
+        }
+      },
+      "AiChatMessage": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role": { "type": "string", "enum": ["user", "assistant"] },
+          "content": { "type": "string" }
+        }
+      },
+      "AiChatRequest": {
+        "type": "object",
+        "required": ["message"],
+        "properties": {
+          "history": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AiChatMessage" }
+          },
+          "message": { "type": "string", "minLength": 1, "maxLength": 2000 }
+        }
+      },
+      "AiAction": {
+        "type": "object",
+        "required": ["kind", "label", "href"],
+        "properties": {
+          "kind": { "type": "string", "enum": ["workout_created"] },
+          "label": { "type": "string" },
+          "href": { "type": "string" }
+        }
+      },
+      "AiChatResponse": {
+        "type": "object",
+        "required": ["reply", "actions", "promptId", "provider"],
+        "properties": {
+          "reply": { "type": "string" },
+          "actions": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/AiAction" }
+          },
+          "promptId": { "type": "string" },
+          "provider": { "type": "string", "enum": ["mock", "anthropic"] }
         }
       }
     }

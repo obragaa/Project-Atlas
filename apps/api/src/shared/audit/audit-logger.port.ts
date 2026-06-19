@@ -22,7 +22,8 @@ export type AuditAction =
   | "auth.logout"
   | "auth.session_revoked"
   | "workout.completed"
-  | "progress.measurement_recorded";
+  | "progress.measurement_recorded"
+  | "ai.chat";
 
 export type AuditOutcome = "success" | "failure";
 

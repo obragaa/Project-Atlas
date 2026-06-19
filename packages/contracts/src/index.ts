@@ -12,5 +12,6 @@ export * from "./workouts";
 export * from "./exercises";
 export * from "./progress";
 export * from "./gamification";
+export * from "./ai";
 export * from "./health";
 export * from "./routes";
