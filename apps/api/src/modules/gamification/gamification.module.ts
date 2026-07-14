@@ -9,15 +9,18 @@ import { PostgresAchievementUnlockRepository } from "./infrastructure/postgres-a
 import { RecordActivityUseCase } from "./application/record-activity.use-case.js";
 import { GetOverviewUseCase } from "./application/get-overview.use-case.js";
 import { GamificationController } from "./presentation/gamification.controller.js";
-import { WorkoutCompleted } from "../workouts/domain/events.js";
+import { WorkoutSessionCompleted } from "../workouts/domain/sessions/events.js";
 import { MeasurementRecorded } from "../progress/domain/events.js";
 
 /**
  * Gamification module composition (blueprint/12, ADR-0006). Owns its activity
  * log + achievement unlocks and reacts to other domains' events: on bootstrap it
  * registers handlers that append activity and unlock milestones when a workout
- * is completed or a measurement is recorded. The handlers are isolated by the
- * dispatcher, so a gamification failure never breaks the originating flow.
+ * session is completed or a measurement is recorded. Activity counts *per
+ * session* (each finished workout, not distinct days) and uses the civil day the
+ * work happened (`performedOn`/`recordedOn`), so streaks/missions never drift to
+ * UTC (ADR-0008). The handlers are isolated by the dispatcher, so a gamification
+ * failure never breaks the originating flow.
  */
 @Module({
   controllers: [GamificationController],
@@ -35,11 +38,11 @@ export class GamificationModule implements OnApplicationBootstrap {
   ) {}
 
   onApplicationBootstrap(): void {
-    this.dispatcher.on<WorkoutCompleted>(WorkoutCompleted.name, (event) =>
+    this.dispatcher.on<WorkoutSessionCompleted>(WorkoutSessionCompleted.name, (event) =>
       this.recordActivity.execute({
         userId: event.userId,
         kind: "workout_completed",
-        occurredAt: event.occurredAt,
+        activityDate: event.performedOn,
       }),
     );
 
@@ -47,7 +50,7 @@ export class GamificationModule implements OnApplicationBootstrap {
       this.recordActivity.execute({
         userId: event.userId,
         kind: "measurement_recorded",
-        occurredAt: event.occurredAt,
+        activityDate: event.recordedOn,
       }),
     );
   }

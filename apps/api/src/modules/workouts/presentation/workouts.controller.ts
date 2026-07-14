@@ -18,7 +18,6 @@ import { GetWorkoutUseCase } from "../application/get-workout.use-case.js";
 import { ListWorkoutsUseCase } from "../application/list-workouts.use-case.js";
 import { UpdateWorkoutUseCase } from "../application/update-workout.use-case.js";
 import { DeleteWorkoutUseCase } from "../application/delete-workout.use-case.js";
-import { CompleteWorkoutUseCase } from "../application/complete-workout.use-case.js";
 import { DuplicateWorkoutUseCase } from "../application/duplicate-workout.use-case.js";
 import { CreateWorkoutRequestDto, UpdateWorkoutRequestDto } from "./dto.js";
 import { ListWorkoutsQueryDto } from "./list-query.dto.js";
@@ -38,7 +37,6 @@ export class WorkoutsController {
     private readonly listWorkouts: ListWorkoutsUseCase,
     private readonly updateWorkout: UpdateWorkoutUseCase,
     private readonly deleteWorkout: DeleteWorkoutUseCase,
-    private readonly completeWorkout: CompleteWorkoutUseCase,
     private readonly duplicateWorkout: DuplicateWorkoutUseCase,
   ) {}
 
@@ -81,12 +79,6 @@ export class WorkoutsController {
   @HttpCode(HttpStatus.NO_CONTENT)
   async remove(@CurrentUser() user: RequestPrincipal, @Param("id") id: string): Promise<void> {
     await this.deleteWorkout.execute({ userId: user.id, workoutId: id });
-  }
-
-  @Post(":id/completion")
-  @HttpCode(HttpStatus.OK)
-  complete(@CurrentUser() user: RequestPrincipal, @Param("id") id: string): Promise<WorkoutView> {
-    return this.completeWorkout.execute({ userId: user.id, workoutId: id });
   }
 
   @Post(":id/duplication")

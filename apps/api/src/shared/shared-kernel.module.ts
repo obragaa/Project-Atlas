@@ -4,7 +4,7 @@ import { InProcessEventDispatcher } from "./events/in-process-event-dispatcher.j
 import { AUDIT_LOGGER, type AuditLogger } from "./audit/audit-logger.port.js";
 import { PinoAuditLogger } from "./audit/pino-audit-logger.js";
 import { UserRegistered } from "../modules/auth/domain/events.js";
-import { WorkoutCompleted } from "../modules/workouts/domain/events.js";
+import { WorkoutSessionCompleted } from "../modules/workouts/domain/sessions/events.js";
 import { MeasurementRecorded } from "../modules/progress/domain/events.js";
 
 /**
@@ -43,11 +43,11 @@ export class SharedKernelModule implements OnModuleInit {
       });
     });
 
-    // Completing a workout is an auditable fact (blueprint/13 "Auditoria":
+    // Finalizing a workout session is an auditable fact (blueprint/13 "Auditoria":
     // "Conclusão de treino").
-    this.dispatcher.on<WorkoutCompleted>(WorkoutCompleted.name, (event) => {
+    this.dispatcher.on<WorkoutSessionCompleted>(WorkoutSessionCompleted.name, (event) => {
       this.audit.record({
-        action: "workout.completed",
+        action: "workout.session_completed",
         outcome: "success",
         userId: event.userId,
       });

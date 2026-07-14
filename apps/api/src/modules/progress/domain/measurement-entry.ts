@@ -56,7 +56,9 @@ export class MeasurementEntry extends AggregateRoot<MeasurementId> {
       note,
       createdAt: new Date(),
     });
-    entry.addDomainEvent(new MeasurementRecorded(entry.id.toString(), input.userId));
+    entry.addDomainEvent(
+      new MeasurementRecorded(entry.id.toString(), input.userId, input.recordedOn.value),
+    );
     return entry;
   }
 

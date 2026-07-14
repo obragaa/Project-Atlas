@@ -1,5 +1,6 @@
 import { ValueObject } from "../../../../shared/domain/value-object.js";
 import { ValidationError } from "../../../../shared/domain/errors.js";
+import { toLocalDay } from "../../../../shared/domain/local-day.js";
 
 interface MeasurementDateProps {
   /** Canonical ISO calendar date, YYYY-MM-DD. */
@@ -30,10 +31,9 @@ export class MeasurementDate extends ValueObject<MeasurementDateProps> {
     return new MeasurementDate({ value });
   }
 
-  /** Builds a date from a JS Date's UTC calendar day. */
+  /** Builds a date from a JS instant's civil day in the app timezone (not UTC). */
   static fromDate(date: Date): MeasurementDate {
-    const iso = date.toISOString().slice(0, 10);
-    return new MeasurementDate({ value: iso });
+    return new MeasurementDate({ value: toLocalDay(date) });
   }
 
   get value(): string {

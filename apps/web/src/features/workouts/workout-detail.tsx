@@ -2,6 +2,7 @@
 
 import { type FormEvent, useCallback, useEffect, useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   type ExerciseSummaryView,
   LOAD_UNITS,
@@ -15,6 +16,7 @@ import { Button, Card, CardDescription, Input, Skeleton, Spinner, cn } from "@at
 import { ApiError } from "@/services/api-client";
 import { exercisesService } from "@/services/exercises.service";
 import { workoutsService } from "@/services/workouts.service";
+import { sessionsService } from "@/services/sessions.service";
 import { MUSCLE_LABELS } from "@/features/exercises/labels";
 import { StatusBadge } from "./workouts-board";
 
@@ -74,12 +76,14 @@ function buildRequest(name: string, items: DraftItem[]): UpdateWorkoutRequest {
 }
 
 /**
- * Workout detail/builder (the `features` layer — blueprint/11): edit a workout's
- * name, add exercises from the catalogue, attach sets, then save (PUT) or
- * complete. Completed workouts are read-only (the API returns 409 — we reflect it
- * by disabling the edit controls). Auth is guaranteed by the app shell.
+ * Workout detail/builder (the `features` layer — blueprint/11): edit a template's
+ * name, add exercises from the catalogue, attach sets, then save (PUT) — or start
+ * a performed session from it ("Treinar agora", ADR-0008). Templates are reusable
+ * forever; recording what you did lives in the session screen. Auth is guaranteed
+ * by the app shell.
  */
 export function WorkoutDetail({ id }: { id: string }) {
+  const router = useRouter();
   const [workout, setWorkout] = useState<WorkoutView | null>(null);
   const [notFound, setNotFound] = useState(false);
   const [loadError, setLoadError] = useState<string | null>(null);
@@ -90,7 +94,7 @@ export function WorkoutDetail({ id }: { id: string }) {
 
   const [pickerOpen, setPickerOpen] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [completing, setCompleting] = useState(false);
+  const [starting, setStarting] = useState(false);
   const [actionError, setActionError] = useState<string | null>(null);
   const [saved, setSaved] = useState(false);
 
@@ -123,8 +127,6 @@ export function WorkoutDetail({ id }: { id: string }) {
     };
   }, [id, hydrate]);
 
-  const readOnly = status === "completed";
-
   function addExercise(exercise: ExerciseSummaryView) {
     setItems((prev) => [...prev, { key: nextKey(), exerciseName: exercise.name, sets: [] }]);
     setSaved(false);
@@ -154,7 +156,7 @@ export function WorkoutDetail({ id }: { id: string }) {
 
   async function onSave(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
-    if (readOnly || !name.trim()) return;
+    if (!name.trim()) return;
     setSaving(true);
     setActionError(null);
     setSaved(false);
@@ -169,18 +171,17 @@ export function WorkoutDetail({ id }: { id: string }) {
     }
   }
 
-  async function onComplete() {
-    if (readOnly) return;
-    setCompleting(true);
+  /** "Iniciar treino": create a live session from this template and go train it. */
+  async function onStartSession() {
+    setStarting(true);
     setActionError(null);
     setSaved(false);
     try {
-      const completed = await workoutsService.complete(id);
-      hydrate(completed);
+      const session = await sessionsService.startFromWorkout(id);
+      router.push(`/sessions/${session.id}`);
     } catch (err) {
       setActionError(toMessage(err));
-    } finally {
-      setCompleting(false);
+      setStarting(false);
     }
   }
 
@@ -231,11 +232,9 @@ export function WorkoutDetail({ id }: { id: string }) {
         <header className="flex flex-col gap-4">
           <div className="flex items-center gap-3">
             <StatusBadge status={status} />
-            {readOnly ? (
-              <span className="text-xs text-text-tertiary">
-                Treinos concluídos não podem ser editados.
-              </span>
-            ) : null}
+            <span className="text-xs text-text-tertiary">
+              Modelo reutilizável — treine quantas vezes quiser.
+            </span>
           </div>
           <Input
             label="Nome do treino"
@@ -244,7 +243,6 @@ export function WorkoutDetail({ id }: { id: string }) {
               setName(e.target.value);
               setSaved(false);
             }}
-            disabled={readOnly}
             requiredField
           />
         </header>
@@ -254,19 +252,17 @@ export function WorkoutDetail({ id }: { id: string }) {
             <h2 className="text-sm font-semibold uppercase tracking-wide text-text-tertiary">
               Exercícios
             </h2>
-            {!readOnly ? (
-              <Button
-                type="button"
-                variant="secondary"
-                size="sm"
-                onClick={() => setPickerOpen((o) => !o)}
-              >
-                {pickerOpen ? "Fechar" : "Adicionar exercício"}
-              </Button>
-            ) : null}
+            <Button
+              type="button"
+              variant="secondary"
+              size="sm"
+              onClick={() => setPickerOpen((o) => !o)}
+            >
+              {pickerOpen ? "Fechar" : "Adicionar exercício"}
+            </Button>
           </div>
 
-          {pickerOpen && !readOnly ? (
+          {pickerOpen ? (
             <ExercisePicker onPick={addExercise} onClose={() => setPickerOpen(false)} />
           ) : null}
 
@@ -274,9 +270,7 @@ export function WorkoutDetail({ id }: { id: string }) {
             <Card padding="lg" className="flex flex-col items-start gap-1">
               <p className="font-medium text-text-primary">Nenhum exercício ainda</p>
               <CardDescription>
-                {readOnly
-                  ? "Este treino não tem exercícios."
-                  : 'Use "Adicionar exercício" para escolher do catálogo.'}
+                Use &quot;Adicionar exercício&quot; para escolher do catálogo.
               </CardDescription>
             </Card>
           ) : (
@@ -286,7 +280,6 @@ export function WorkoutDetail({ id }: { id: string }) {
                   <ItemCard
                     item={item}
                     index={index}
-                    readOnly={readOnly}
                     onRemoveItem={() => removeItem(item.key)}
                     onAddSet={(set) => addSet(item.key, set)}
                     onRemoveSet={(setKey) => removeSet(item.key, setKey)}
@@ -315,22 +308,20 @@ export function WorkoutDetail({ id }: { id: string }) {
           </p>
         ) : null}
 
-        {!readOnly ? (
-          <div className="flex flex-wrap gap-3">
-            <Button type="submit" isLoading={saving} loadingText="Salvando" disabled={!name.trim()}>
-              Salvar
-            </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              isLoading={completing}
-              loadingText="Concluindo"
-              onClick={() => void onComplete()}
-            >
-              Concluir treino
-            </Button>
-          </div>
-        ) : null}
+        <div className="flex flex-wrap gap-3">
+          <Button type="submit" isLoading={saving} loadingText="Salvando" disabled={!name.trim()}>
+            Salvar
+          </Button>
+          <Button
+            type="button"
+            isLoading={starting}
+            loadingText="Iniciando"
+            onClick={() => void onStartSession()}
+            disabled={items.length === 0}
+          >
+            Iniciar treino
+          </Button>
+        </div>
       </form>
     </div>
   );
@@ -350,14 +341,12 @@ function BackLink() {
 function ItemCard({
   item,
   index,
-  readOnly,
   onRemoveItem,
   onAddSet,
   onRemoveSet,
 }: {
   item: DraftItem;
   index: number;
-  readOnly: boolean;
   onRemoveItem: () => void;
   onAddSet: (set: DraftSet) => void;
   onRemoveSet: (setKey: string) => void;
@@ -369,11 +358,9 @@ function ItemCard({
           <span className="text-sm font-medium text-text-tertiary">{index + 1}.</span>
           <p className="font-medium text-text-primary">{item.exerciseName}</p>
         </div>
-        {!readOnly ? (
-          <Button type="button" variant="ghost" size="sm" onClick={onRemoveItem}>
-            Remover
-          </Button>
-        ) : null}
+        <Button type="button" variant="ghost" size="sm" onClick={onRemoveItem}>
+          Remover
+        </Button>
       </div>
 
       {item.sets.length === 0 ? (
@@ -395,23 +382,21 @@ function ItemCard({
                   <span className="text-text-tertiary">— {s.notes.trim()}</span>
                 ) : null}
               </div>
-              {!readOnly ? (
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={() => onRemoveSet(s.key)}
-                  aria-label={`Remover série ${i + 1}`}
-                >
-                  ✕
-                </Button>
-              ) : null}
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => onRemoveSet(s.key)}
+                aria-label={`Remover série ${i + 1}`}
+              >
+                ✕
+              </Button>
             </li>
           ))}
         </ul>
       )}
 
-      {!readOnly ? <AddSetForm onAdd={onAddSet} /> : null}
+      <AddSetForm onAdd={onAddSet} />
     </Card>
   );
 }

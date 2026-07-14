@@ -36,6 +36,13 @@
       "when": 1781822670229,
       "tag": "0004_married_reaper",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1784066642811,
+      "tag": "0005_flippant_solo",
+      "breakpoints": true
     }
   ]
 }

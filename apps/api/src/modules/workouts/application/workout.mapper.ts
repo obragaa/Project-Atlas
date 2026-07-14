@@ -40,7 +40,9 @@ export function toWorkoutView(workout: Workout): WorkoutView {
     items: workout.items.map(toItemView),
     createdAt: workout.createdAt.toISOString(),
     updatedAt: workout.updatedAt.toISOString(),
-    completedAt: workout.completedAt?.toISOString() ?? null,
+    // Templates no longer complete (ADR-0008); kept in the view for wire
+    // stability, always null.
+    completedAt: null,
   };
 }
 
@@ -51,6 +53,8 @@ export function toWorkoutSummaryView(workout: Workout): WorkoutSummaryView {
     status: workout.status,
     itemCount: workout.items.length,
     createdAt: workout.createdAt.toISOString(),
-    completedAt: workout.completedAt?.toISOString() ?? null,
+    // Templates no longer complete (ADR-0008); kept in the view for wire
+    // stability, always null.
+    completedAt: null,
   };
 }

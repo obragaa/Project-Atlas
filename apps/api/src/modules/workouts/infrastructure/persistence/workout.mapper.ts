@@ -4,7 +4,7 @@ import {
   type WorkoutItemRow,
   type WorkoutRow,
 } from "../../../../shared/database/schema/index.js";
-import { Workout, type WorkoutStatus } from "../../domain/workout.js";
+import { Workout } from "../../domain/workout.js";
 import { WorkoutItem } from "../../domain/workout-item.js";
 import { ExerciseSet } from "../../domain/exercise-set.js";
 import { WorkoutId, WorkoutItemId, SetId } from "../../domain/workout-id.js";
@@ -56,11 +56,12 @@ export function toDomain(bundle: WorkoutRowBundle): Workout {
   return Workout.restore(WorkoutId.create(bundle.workout.id), {
     userId: bundle.workout.userId,
     name: WorkoutName.create(bundle.workout.name),
-    status: bundle.workout.status as WorkoutStatus,
+    // Legacy rows may still carry a 'completed' status; treat them as 'active'
+    // now that templates have no terminal state (ADR-0008).
+    status: bundle.workout.status === "draft" ? "draft" : "active",
     items,
     createdAt: bundle.workout.createdAt,
     updatedAt: bundle.workout.updatedAt,
-    completedAt: bundle.workout.completedAt,
   });
 }
 
@@ -77,7 +78,8 @@ export function toPersistence(workout: Workout): {
     status: workout.status,
     createdAt: workout.createdAt,
     updatedAt: workout.updatedAt,
-    completedAt: workout.completedAt,
+    // Column retained for now (non-destructive); templates never complete (ADR-0008).
+    completedAt: null,
   };
 
   const items: WorkoutItemRow[] = [];

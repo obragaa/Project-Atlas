@@ -12,8 +12,13 @@ import { computeStreak } from "../domain/streak.js";
 export interface RecordActivityCommand {
   readonly userId: string;
   readonly kind: ActivityKind;
-  /** When the action happened (the event's occurredAt). */
-  readonly occurredAt: Date;
+  /**
+   * The civil calendar day (AAAA-MM-DD, app timezone) the activity counts for.
+   * Passed pre-resolved by the caller so streaks/missions never drift to UTC
+   * (blueprint/09; the timezone bug fixed in ADR-0008). For a performed workout
+   * this is the session's `performedOn`; for a measurement, its `recordedOn`.
+   */
+  readonly activityDate: string;
 }
 
 /**
@@ -31,14 +36,13 @@ export class RecordActivityUseCase {
   ) {}
 
   async execute(command: RecordActivityCommand): Promise<void> {
-    const activityDate = command.occurredAt.toISOString().slice(0, 10);
     await this.activities.append({
       userId: command.userId,
-      activityDate,
+      activityDate: command.activityDate,
       kind: command.kind,
     });
 
-    await this.evaluateAchievements(command.userId, activityDate);
+    await this.evaluateAchievements(command.userId, command.activityDate);
   }
 
   private async evaluateAchievements(userId: string, todayIso: string): Promise<void> {

@@ -38,9 +38,10 @@ export function Dashboard() {
   }, []);
 
   const total = workouts?.length ?? 0;
-  const completed = workouts?.filter((w) => w.status === "completed").length ?? 0;
-  const open = total - completed;
-  const next = workouts?.find((w) => w.status !== "completed") ?? null;
+  const ready = workouts?.filter((w) => w.status === "active").length ?? 0;
+  const streakDays = gamification?.streak.current ?? 0;
+  // The next workout to train: prefer a ready (active) template, else the first.
+  const next = workouts?.find((w) => w.status === "active") ?? workouts?.[0] ?? null;
   const firstName = user?.displayName?.trim().split(/\s+/)[0] ?? "atleta";
 
   return (
@@ -84,12 +85,16 @@ export function Dashboard() {
       <section className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         <Stat
           icon={DumbbellIcon}
-          label="Total de treinos"
+          label="Meus treinos"
           value={workouts === null ? null : total}
           accent
         />
-        <Stat icon={ClockIcon} label="Em aberto" value={workouts === null ? null : open} />
-        <Stat icon={CheckIcon} label="Concluídos" value={workouts === null ? null : completed} />
+        <Stat icon={ClockIcon} label="Prontos para treinar" value={workouts === null ? null : ready} />
+        <Stat
+          icon={CheckIcon}
+          label="Dias de streak"
+          value={gamification === null ? null : streakDays}
+        />
         <Stat icon={LibraryIcon} label="Exercícios no catálogo" value={exerciseCount} />
       </section>
 

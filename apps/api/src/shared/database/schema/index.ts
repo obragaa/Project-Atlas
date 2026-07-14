@@ -1,5 +1,6 @@
 import { users } from "./users.schema.js";
 import { workouts, workoutItems, exerciseSets } from "./workouts.schema.js";
+import { workoutSessions, sessionExercises, performedSets } from "./sessions.schema.js";
 import { exercises } from "./exercises.schema.js";
 import { measurements } from "./measurements.schema.js";
 import { activityLog, achievementUnlocks } from "./gamification.schema.js";
@@ -13,6 +14,9 @@ export const schema = {
   workouts,
   workoutItems,
   exerciseSets,
+  workoutSessions,
+  sessionExercises,
+  performedSets,
   exercises,
   measurements,
   activityLog,
@@ -24,6 +28,9 @@ export {
   workouts,
   workoutItems,
   exerciseSets,
+  workoutSessions,
+  sessionExercises,
+  performedSets,
   exercises,
   measurements,
   activityLog,
@@ -38,6 +45,14 @@ export type {
   ExerciseSetRow,
   ExerciseSetInsert,
 } from "./workouts.schema.js";
+export type {
+  WorkoutSessionRow,
+  WorkoutSessionInsert,
+  SessionExerciseRow,
+  SessionExerciseInsert,
+  PerformedSetRow,
+  PerformedSetInsert,
+} from "./sessions.schema.js";
 export type { ExerciseRow, ExerciseInsert } from "./exercises.schema.js";
 export type { MeasurementRow, MeasurementInsert } from "./measurements.schema.js";
 export type {

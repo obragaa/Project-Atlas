@@ -11,6 +11,8 @@ export class MeasurementRecorded implements DomainEvent {
   constructor(
     readonly aggregateId: string,
     readonly userId: string,
+    /** Civil day the measurement is for (AAAA-MM-DD) — the day it counts toward. */
+    readonly recordedOn: string,
   ) {
     this.occurredAt = new Date();
   }

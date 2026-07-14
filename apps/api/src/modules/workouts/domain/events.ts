@@ -1,6 +1,6 @@
 import { type DomainEvent } from "../../../shared/domain/domain-event.js";
 
-/** Emitted when a workout is created (blueprint/13 "Eventos" — facts). */
+/** Emitted when a workout template is created (blueprint/13 "Eventos" — facts). */
 export class WorkoutCreated implements DomainEvent {
   readonly name = "WorkoutCreated";
   readonly occurredAt: Date;
@@ -13,18 +13,6 @@ export class WorkoutCreated implements DomainEvent {
   }
 }
 
-/**
- * Emitted when a workout is marked completed (blueprint/13 "WorkoutCompleted").
- * Consumed later by Streak/Core; today it is recorded on the audit channel.
- */
-export class WorkoutCompleted implements DomainEvent {
-  readonly name = "WorkoutCompleted";
-  readonly occurredAt: Date;
-
-  constructor(
-    readonly aggregateId: string,
-    readonly userId: string,
-  ) {
-    this.occurredAt = new Date();
-  }
-}
+// WorkoutCompleted was retired in ADR-0008: "completing" a workout is now
+// recording a WorkoutSession (see domain/sessions/events.ts), which carries the
+// day performed and the volume done. The template itself has no completion.

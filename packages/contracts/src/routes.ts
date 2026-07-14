@@ -24,10 +24,18 @@ export const API_ROUTES = {
     collection: "/v1/workouts",
     /** Item: GET / PUT / DELETE a single workout by id. */
     byId: (id: string) => `/v1/workouts/${id}`,
-    /** Mark a workout completed (emits WorkoutCompleted). */
-    completion: (id: string) => `/v1/workouts/${id}/completion`,
-    /** Duplicate a workout into a fresh draft. */
+    /** Duplicate a workout template into a fresh draft. */
     duplication: (id: string) => `/v1/workouts/${id}/duplication`,
+    /** Start a performed session from this template ("Treinar agora"). */
+    sessions: (id: string) => `/v1/workouts/${id}/sessions`,
+  },
+  sessions: {
+    /** Collection: GET lists the user's performed-workout history (cursor). */
+    collection: "/v1/sessions",
+    /** Item: GET / PUT / DELETE a single session by id. */
+    byId: (id: string) => `/v1/sessions/${id}`,
+    /** Finalize a session (emits WorkoutSessionCompleted → gamification). */
+    completion: (id: string) => `/v1/sessions/${id}/completion`,
   },
   exercises: {
     /** Collection: GET lists/searches the catalogue (cursor-paginated). */

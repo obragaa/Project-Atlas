@@ -36,10 +36,6 @@ export const workoutsService = {
     });
   },
 
-  complete(id: string): Promise<WorkoutView> {
-    return apiRequest<WorkoutView>(API_ROUTES.workouts.completion(id), { method: "POST" });
-  },
-
   duplicate(id: string): Promise<WorkoutView> {
     return apiRequest<WorkoutView>(API_ROUTES.workouts.duplication(id), { method: "POST" });
   },

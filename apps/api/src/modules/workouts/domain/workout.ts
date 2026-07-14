@@ -1,12 +1,17 @@
 import { AggregateRoot } from "../../../shared/domain/aggregate-root.js";
-import { ConflictError } from "../../../shared/domain/errors.js";
 import { WorkoutId } from "./workout-id.js";
 import { WorkoutName } from "./value-objects/workout-name.js";
 import { type WorkoutItem } from "./workout-item.js";
-import { WorkoutCompleted, WorkoutCreated } from "./events.js";
+import { WorkoutCreated } from "./events.js";
 
-/** Lifecycle of a workout (blueprint/13 "Entidades", ADR-0003). */
-export type WorkoutStatus = "draft" | "active" | "completed";
+/**
+ * Lifecycle of a workout *template* (blueprint/13, ADR-0003, ADR-0008). A
+ * template is `draft` (no items yet) or `active` (ready to train). There is no
+ * terminal `completed` state anymore: a template is reusable forever, and the
+ * record of actually performing it is a WorkoutSession (ADR-0008). This removes
+ * the old freeze that forced users to duplicate a template to train it again.
+ */
+export type WorkoutStatus = "draft" | "active";
 
 interface WorkoutProps {
   readonly userId: string;
@@ -15,7 +20,6 @@ interface WorkoutProps {
   items: WorkoutItem[];
   readonly createdAt: Date;
   updatedAt: Date;
-  completedAt: Date | null;
 }
 
 /**
@@ -45,7 +49,6 @@ export class Workout extends AggregateRoot<WorkoutId> {
       items: Workout.normalizeOrder(items),
       createdAt: now,
       updatedAt: now,
-      completedAt: null,
     });
     workout.addDomainEvent(new WorkoutCreated(workout.id.toString(), input.userId));
     return workout;
@@ -58,30 +61,13 @@ export class Workout extends AggregateRoot<WorkoutId> {
 
   /** Replace the editable content (name + items) — PUT semantics (doc 14). */
   replaceContent(name: WorkoutName, items: WorkoutItem[]): void {
-    if (this.props.status === "completed") {
-      throw new ConflictError(
-        "Um treino concluído não pode ser editado.",
-        "workout.already_completed",
-      );
-    }
     this.props.name = name;
     this.props.items = Workout.normalizeOrder(items);
     this.props.status = items.length > 0 ? "active" : "draft";
     this.touch();
   }
 
-  /** Mark the workout completed and emit the fact (idempotency: re-complete is a conflict). */
-  complete(): void {
-    if (this.props.status === "completed") {
-      throw new ConflictError("Este treino já foi concluído.", "workout.already_completed");
-    }
-    this.props.status = "completed";
-    this.props.completedAt = new Date();
-    this.touch();
-    this.addDomainEvent(new WorkoutCompleted(this.id.toString(), this.props.userId));
-  }
-
-  /** Clone into a fresh draft owned by the same user (new ids; no completion). */
+  /** Clone into a fresh draft owned by the same user (new ids). */
   duplicate(cloneItem: (item: WorkoutItem) => WorkoutItem): Workout {
     const copies = this.props.items.map(cloneItem);
     const duplicated = Workout.create({
@@ -128,9 +114,5 @@ export class Workout extends AggregateRoot<WorkoutId> {
 
   get updatedAt(): Date {
     return this.props.updatedAt;
-  }
-
-  get completedAt(): Date | null {
-    return this.props.completedAt;
   }
 }

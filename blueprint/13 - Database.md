@@ -129,7 +129,7 @@ Utilizar Aggregate Roots.
 
 Exemplos:
 
-Workout
+Workout (template reutilizável)
 
 ↓
 
@@ -140,6 +140,22 @@ Exercises
 Sets
 
 Workout controla toda consistência do agregado.
+
+WorkoutSession (treino realizado — ADR-0008)
+
+↓
+
+SessionExercises
+
+↓
+
+PerformedSets
+
+WorkoutSession é um agregado separado do template: registra o treino de fato
+executado (reps/carga reais, série concluída, RPE, observações) num dia civil
+(`performedOn`, padrão hoje). É criada a partir de um Workout com um toque e
+alimenta histórico, progresso e gamificação. O template nunca "conclui" nem
+congela; cada execução gera uma nova WorkoutSession.
 
 ---
 

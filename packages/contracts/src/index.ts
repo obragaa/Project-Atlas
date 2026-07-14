@@ -9,6 +9,7 @@ export * from "./pagination";
 export * from "./auth";
 export * from "./core";
 export * from "./workouts";
+export * from "./sessions";
 export * from "./exercises";
 export * from "./progress";
 export * from "./gamification";

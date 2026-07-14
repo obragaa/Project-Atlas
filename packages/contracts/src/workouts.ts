@@ -5,8 +5,12 @@
  * is opaque; collections are cursor-paginated; payloads are minimal.
  */
 
-/** Lifecycle of a workout (blueprint/13 "Entidades", ADR-0003). */
-export const WORKOUT_STATUSES = ["draft", "active", "completed"] as const;
+/**
+ * Lifecycle of a workout *template* (blueprint/13, ADR-0003, ADR-0008). A
+ * template is `draft` (no items) or `active` (ready to train). It has no terminal
+ * `completed` state: performing a workout is a WorkoutSession (see `sessions.ts`).
+ */
+export const WORKOUT_STATUSES = ["draft", "active"] as const;
 export type WorkoutStatus = (typeof WORKOUT_STATUSES)[number];
 
 /** Unit a load is expressed in. */

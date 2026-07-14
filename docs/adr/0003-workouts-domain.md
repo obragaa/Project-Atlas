@@ -1,9 +1,14 @@
 # ADR-0003 — Workouts Domain Model
 
-- **Status:** Accepted
+- **Status:** Accepted (amended by ADR-0008)
 - **Date:** 2026-06-18
 - **Author:** Engineering (Atlas)
 - **Supersedes:** —
+- **Amended by:** ADR-0008 (Workout Sessions) — the template-level `completed`
+  state, `completedAt`, and the `WorkoutCompleted` event described below were
+  **retired**. A `Workout` is now a reusable template (`draft`/`active` only);
+  performing one is a separate `WorkoutSession` aggregate. Read this ADR for the
+  template shape, ADR-0008 for the session model.
 - **Related Blueprint docs:** `07 - Features`, `12 - Backend Architecture`, `13 - Database`, `14 - API`, `18 - Testing`, `23 - Engineering Governance`
 
 ---

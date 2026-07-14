@@ -1,11 +1,13 @@
 "use client";
 
 import { type FormEvent, useEffect, useRef, useState } from "react";
-import Link from "next/link";
 import { type AiAction, type AiChatMessage } from "@atlas/contracts";
-import { Button, Card, Input, cn } from "@atlas/ui";
+import { Button, Input, cn } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
 import { aiService } from "@/services/ai.service";
+import { ActionCard } from "@/features/ai/action-card";
+import { SparkIcon } from "@/features/ai/icons";
+import { TypingDots } from "@/features/ai/typing-dots";
 
 interface TranscriptItem {
   readonly role: "user" | "assistant";
@@ -179,81 +181,5 @@ export function AtlasChat() {
         </Button>
       </form>
     </div>
-  );
-}
-
-function ActionCard({ action }: { action: AiAction }) {
-  return (
-    <Link href={action.href}>
-      <Card
-        interactive
-        padding="md"
-        className="flex items-center gap-3 border-accent/40 bg-accent-subtle"
-      >
-        <span className="grid h-9 w-9 shrink-0 place-items-center rounded-lg bg-accent text-on-accent">
-          <DumbbellIcon />
-        </span>
-        <div className="min-w-0">
-          <p className="text-xs font-medium uppercase tracking-wide text-accent">Treino criado</p>
-          <p className="truncate font-medium text-text-primary">{action.label}</p>
-        </div>
-        <span className="ml-auto text-sm font-medium text-accent">Abrir →</span>
-      </Card>
-    </Link>
-  );
-}
-
-function TypingDots() {
-  return (
-    <span className="flex gap-1" aria-label="Atlas está digitando">
-      {[0, 150, 300].map((delay) => (
-        <span
-          key={delay}
-          className="h-2 w-2 rounded-full bg-text-tertiary"
-          style={{
-            animation: "atlas-pulse-glow 1.2s ease-in-out infinite",
-            animationDelay: `${delay}ms`,
-          }}
-        />
-      ))}
-    </span>
-  );
-}
-
-function SparkIcon({ large }: { large?: boolean }) {
-  const s = large ? 28 : 22;
-  return (
-    <svg
-      width={s}
-      height={s}
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M12 3v4M12 17v4M3 12h4M17 12h4" />
-      <path d="M12 8a4 4 0 0 0 4 4 4 4 0 0 0-4 4 4 4 0 0 0-4-4 4 4 0 0 0 4-4z" />
-    </svg>
-  );
-}
-
-function DumbbellIcon() {
-  return (
-    <svg
-      width="18"
-      height="18"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="2"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M6.5 6.5 17.5 17.5M3 7v10M7 4v16M17 4v16M21 7v10" />
-    </svg>
   );
 }

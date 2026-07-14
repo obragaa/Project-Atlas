@@ -115,6 +115,13 @@ Permitir o gerenciamento completo dos treinos.
 * Registrar observações.
 * Histórico de treinos.
 
+> Modelo (ADR-0008): "Criar/Editar/Duplicar/Excluir" e "Organizar exercícios"
+> pertencem ao **template** (`Workout`), reutilizável para sempre. "Registrar
+> séries/repetições/carga/observações" e o "Histórico de treinos" pertencem à
+> **sessão realizada** (`WorkoutSession`), criada do template com um toque
+> ("Treinar agora"), com data padrão hoje. Cada série realizada registra também
+> se foi concluída e o esforço percebido (RPE).
+
 ---
 
 # Exercícios

@@ -7,6 +7,7 @@ import { type WorkoutStatus, type WorkoutSummaryView } from "@atlas/contracts";
 import { Button, Card, CardDescription, Input, Skeleton, cn } from "@atlas/ui";
 import { ApiError } from "@/services/api-client";
 import { workoutsService } from "@/services/workouts.service";
+import { sessionsService } from "@/services/sessions.service";
 
 /**
  * Workouts board (the `features` layer — blueprint/11): a rich, information-dense
@@ -71,7 +72,9 @@ export function WorkoutsBoard() {
     <div className="flex flex-col gap-8">
       <header className="flex flex-col gap-1">
         <h1 className="text-3xl font-semibold tracking-tight text-text-primary">Treinos</h1>
-        <p className="text-text-secondary">Crie, organize, conclua e duplique seus treinos.</p>
+        <p className="text-text-secondary">
+          Monte seus modelos de treino e comece a treinar com um toque.
+        </p>
       </header>
 
       <Card padding="lg">
@@ -124,7 +127,12 @@ export function WorkoutsBoard() {
               <WorkoutCard
                 workout={w}
                 pending={pendingId === w.id}
-                onComplete={() => void act(w.id, () => workoutsService.complete(w.id))}
+                onTrain={() =>
+                  void act(w.id, async () => {
+                    const session = await sessionsService.startFromWorkout(w.id);
+                    router.push(`/sessions/${session.id}`);
+                  })
+                }
                 onDuplicate={() => void act(w.id, () => workoutsService.duplicate(w.id))}
                 onRemove={() => void act(w.id, () => workoutsService.remove(w.id))}
               />
@@ -139,13 +147,13 @@ export function WorkoutsBoard() {
 function WorkoutCard({
   workout,
   pending,
-  onComplete,
+  onTrain,
   onDuplicate,
   onRemove,
 }: {
   workout: WorkoutSummaryView;
   pending: boolean;
-  onComplete: () => void;
+  onTrain: () => void;
   onDuplicate: () => void;
   onRemove: () => void;
 }) {
@@ -157,11 +165,7 @@ function WorkoutCard({
         aria-hidden="true"
         className={cn(
           "absolute inset-y-0 left-0 w-1",
-          status === "completed"
-            ? "bg-success-solid"
-            : status === "active"
-              ? "bg-accent"
-              : "bg-border-strong",
+          status === "active" ? "bg-accent" : "bg-border-strong",
         )}
       />
       <div className="flex items-start justify-between gap-3">
@@ -191,10 +195,10 @@ function WorkoutCard({
           variant="secondary"
           size="sm"
           isLoading={pending}
-          disabled={status === "completed"}
-          onClick={onComplete}
+          disabled={itemCount === 0}
+          onClick={onTrain}
         >
-          Concluir
+          Iniciar treino
         </Button>
         <Button variant="ghost" size="sm" isLoading={pending} onClick={onDuplicate}>
           Duplicar
@@ -210,7 +214,6 @@ function WorkoutCard({
 const STATUS_LABELS: Record<WorkoutStatus, string> = {
   draft: "Rascunho",
   active: "Ativo",
-  completed: "Concluído",
 };
 
 export function StatusBadge({ status }: { status: WorkoutStatus }) {
@@ -218,11 +221,9 @@ export function StatusBadge({ status }: { status: WorkoutStatus }) {
     <span
       className={cn(
         "inline-flex shrink-0 items-center rounded-full border px-2.5 py-0.5 text-xs font-medium",
-        status === "completed"
-          ? "border-success-border bg-success-surface text-success-text"
-          : status === "active"
-            ? "border-transparent bg-accent-subtle text-accent"
-            : "border-border bg-surface-overlay text-text-secondary",
+        status === "active"
+          ? "border-transparent bg-accent-subtle text-accent"
+          : "border-border bg-surface-overlay text-text-secondary",
       )}
     >
       {STATUS_LABELS[status]}

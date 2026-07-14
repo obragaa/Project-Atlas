@@ -36,7 +36,6 @@ export class PostgresWorkoutRepository implements WorkoutRepository {
             name: workoutRow.name,
             status: workoutRow.status,
             updatedAt: workoutRow.updatedAt,
-            completedAt: workoutRow.completedAt,
           },
         });
 

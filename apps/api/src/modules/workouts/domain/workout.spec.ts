@@ -20,7 +20,6 @@ describe("Workout aggregate", () => {
 
     expect(workout.status).toBe("draft");
     expect(workout.userId).toBe(USER);
-    expect(workout.completedAt).toBeNull();
     const events = workout.pullDomainEvents();
     expect(events).toHaveLength(1);
     expect(events[0]?.name).toBe("WorkoutCreated");
@@ -59,37 +58,20 @@ describe("Workout aggregate", () => {
     expect(workout.items[0]?.sets[0]?.load?.weight).toBe(100);
   });
 
-  it("completes an active workout, stamps completedAt, and emits WorkoutCompleted", () => {
+  it("re-editing a workout is always allowed — a template never freezes (ADR-0008)", () => {
     const workout = Workout.create({ userId: USER, name: name(), items: [item("Bench")] });
-    workout.pullDomainEvents();
-
-    workout.complete();
-
-    expect(workout.status).toBe("completed");
-    expect(workout.completedAt).toBeInstanceOf(Date);
-    const events = workout.pullDomainEvents();
-    expect(events.map((e) => e.name)).toEqual(["WorkoutCompleted"]);
+    // No terminal state: content can be replaced any number of times.
+    expect(() => workout.replaceContent(name("Leg Day"), [item("Squat")])).not.toThrow();
+    expect(workout.status).toBe("active");
+    expect(workout.name.value).toBe("Leg Day");
   });
 
-  it("rejects completing an already-completed workout (conflict)", () => {
-    const workout = Workout.create({ userId: USER, name: name(), items: [item("Bench")] });
-    workout.complete();
-    expect(() => workout.complete()).toThrowError(/já foi concluído/i);
-  });
-
-  it("rejects editing a completed workout (conflict)", () => {
-    const workout = Workout.create({ userId: USER, name: name(), items: [item("Bench")] });
-    workout.complete();
-    expect(() => workout.replaceContent(name("nope"), [])).toThrowError(/concluído/i);
-  });
-
-  it("duplicates into a fresh draft with new ids and no completion", () => {
+  it("duplicates into a fresh draft with new ids", () => {
     const original = Workout.create({
       userId: USER,
       name: name("Original"),
       items: [item("Bench", [set(8), set(8)])],
     });
-    original.complete();
     original.pullDomainEvents();
 
     const copy = original.duplicate((i) =>
@@ -101,8 +83,7 @@ describe("Workout aggregate", () => {
     );
 
     expect(copy.id.equals(original.id)).toBe(false);
-    expect(copy.status).toBe("active"); // has items, not completed
-    expect(copy.completedAt).toBeNull();
+    expect(copy.status).toBe("active");
     expect(copy.name.value).toBe("Original (cópia)");
     expect(copy.items[0]?.id.equals(original.items[0]!.id)).toBe(false);
     expect(copy.items[0]?.sets).toHaveLength(2);

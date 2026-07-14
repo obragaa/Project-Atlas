@@ -132,6 +132,12 @@ O objetivo não é criar ansiedade.
 
 Ele existe para reforçar consistência.
 
+O dia é sempre o **dia civil no fuso do usuário** (Brasil, `America/Sao_Paulo`),
+nunca UTC — um treino às 21h não pode contar para o dia seguinte (ADR-0008). A
+unidade que dispara a contagem é o **treino realizado** (uma `WorkoutSession`
+concluída), não um dia genérico: dois treinos no mesmo dia contam como um único
+dia ativo para o streak, mas ambos existem no histórico e no volume.
+
 ---
 
 ## Regras

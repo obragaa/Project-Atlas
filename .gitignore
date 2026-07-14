@@ -40,3 +40,9 @@ Thumbs.db
 
 # Local agent tooling (Claude Code) — never commit
 .claude/
+
+# graphify knowledge-graph output — regenerable artifact, run /graphify to rebuild
+graphify-out/
+
+# Imported tooling archives — extracted, not tracked
+*.zip

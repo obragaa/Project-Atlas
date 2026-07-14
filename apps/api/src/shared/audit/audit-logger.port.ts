@@ -21,7 +21,7 @@ export type AuditAction =
   | "auth.token_refreshed"
   | "auth.logout"
   | "auth.session_revoked"
-  | "workout.completed"
+  | "workout.session_completed"
   | "progress.measurement_recorded"
   | "ai.chat";
 

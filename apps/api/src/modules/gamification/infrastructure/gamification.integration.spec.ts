@@ -35,7 +35,7 @@ describe("Gamification (PGlite integration)", () => {
     await record.execute({
       userId: USER,
       kind: "workout_completed",
-      occurredAt: day("2026-06-18"),
+      activityDate: "2026-06-18",
     });
 
     const result = await overview.execute({ userId: USER, today: day("2026-06-18") });
@@ -44,10 +44,10 @@ describe("Gamification (PGlite integration)", () => {
     expect(result.unlockedCount).toBeGreaterThanOrEqual(1);
   });
 
-  it("is idempotent: completing two workouts the same day is one active day", async () => {
+  it("streak counts active days: two workouts the same day is one active day", async () => {
     const u = "22222222-2222-4222-8222-222222222222";
-    await record.execute({ userId: u, kind: "workout_completed", occurredAt: day("2026-06-18") });
-    await record.execute({ userId: u, kind: "workout_completed", occurredAt: day("2026-06-18") });
+    await record.execute({ userId: u, kind: "workout_completed", activityDate: "2026-06-18" });
+    await record.execute({ userId: u, kind: "workout_completed", activityDate: "2026-06-18" });
 
     const result = await overview.execute({ userId: u, today: day("2026-06-18") });
     expect(result.streak.current).toBe(1);
@@ -56,7 +56,7 @@ describe("Gamification (PGlite integration)", () => {
   it("builds a 3-day streak from consecutive active days", async () => {
     const u = "33333333-3333-4333-8333-333333333333";
     for (const d of ["2026-06-16", "2026-06-17", "2026-06-18"]) {
-      await record.execute({ userId: u, kind: "workout_completed", occurredAt: day(d) });
+      await record.execute({ userId: u, kind: "workout_completed", activityDate: d });
     }
     const result = await overview.execute({ userId: u, today: day("2026-06-18") });
     expect(result.streak.current).toBe(3);
@@ -67,7 +67,7 @@ describe("Gamification (PGlite integration)", () => {
     const u = "44444444-4444-4444-8444-444444444444";
     // 3 workouts in the same ISO week (Mon 15 – Sun 21), one of them today (18).
     for (const d of ["2026-06-16", "2026-06-17", "2026-06-18"]) {
-      await record.execute({ userId: u, kind: "workout_completed", occurredAt: day(d) });
+      await record.execute({ userId: u, kind: "workout_completed", activityDate: d });
     }
     const result = await overview.execute({ userId: u, today: day("2026-06-18") });
 
@@ -84,7 +84,7 @@ describe("Gamification (PGlite integration)", () => {
     await record.execute({
       userId: u,
       kind: "measurement_recorded",
-      occurredAt: day("2026-06-18"),
+      activityDate: "2026-06-18",
     });
     const result = await overview.execute({ userId: u, today: day("2026-06-18") });
     expect(result.achievements.find((a) => a.key === "first_workout")?.unlockedAt).toBeNull();
